@@ -8,32 +8,36 @@ export class BoardManager {
         //
     }
 
-    public static getCells(p1: {c: number, r: number}, p2: {c: number, r: number}): {c: number, r: number} [] {
+    public static getCells(x0: number, y0: number, x1: number, y1: number): {c: number, r: number} [] {
 
-        const ret: {c: number, r: number} [] = [p1];
+        const cells: {c: number, r: number} [] = [];
 
-        const dy = p2.r - p1.r;
-        const dx = p2.c - p1.c;
+        const xDist = Math.abs(x1 - x0);
+        let xStep = x0 < x1 ? 1 : -1;
 
-        let d = dy - (dx / 2);
+        const yDist = -Math.abs(y1 - y0);
+        let yStep = y0 < y1 ? 1 : -1;
 
-        let c = p1.c;
-        let r = p1.r;
+        let error = xDist + yDist;
+        
+        cells.push({c: x0, r: y0});
 
-        while (c < p2.c) {
-
-            c ++;
-
-            if ( d < 0) {
-                d += dy;
+        while (x0 !== x1 || y0 !== y1) {
+            
+            if (2 * error - yDist > xDist - 2 * error) {
+                // horizontal step
+                error += yDist;
+                x0 += xStep;
             } else {
-                d += dy - dx;
-                r ++;
+                // vertical step
+                error += xDist;
+                y0 += yStep;
             }
+    
 
-            ret.push({c: c, r: r});
+            cells.push({c: x0 , r: y0});
         }
 
-        return ret;
+        return cells;
     }
 }

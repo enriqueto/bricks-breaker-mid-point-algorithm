@@ -527,6 +527,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var GameConstants_1 = __webpack_require__(/*! ../../GameConstants */ "./src/GameConstants.ts");
+var Cell_1 = __webpack_require__(/*! ./Cell */ "./src/scenes/board-scene/Cell.ts");
+var BoardManager_1 = __webpack_require__(/*! ./BoardManager */ "./src/scenes/board-scene/BoardManager.ts");
 var BoardContainer = /** @class */ (function (_super) {
     __extends(BoardContainer, _super);
     function BoardContainer(scene) {
@@ -537,10 +539,43 @@ var BoardContainer = /** @class */ (function (_super) {
         background.fillStyle(0xFFFFFF, .075);
         background.fillRect(-BoardContainer.BOARD_WIDTH / 2, -BoardContainer.BOARD_HEIGHT / 2, BoardContainer.BOARD_WIDTH, BoardContainer.BOARD_HEIGHT);
         _this.add(background);
+        _this.cells = [];
+        for (var r = 0; r < 11; r++) {
+            _this.cells[r] = [];
+            for (var c = 0; c < 9; c++) {
+                var cell = new Cell_1.Cell(_this.scene, { c: c, r: r });
+                cell.x = -BoardContainer.BOARD_WIDTH / 2 + Cell_1.Cell.CELL_SIZE * c;
+                cell.y = -BoardContainer.BOARD_HEIGHT / 2 + Cell_1.Cell.CELL_SIZE * r;
+                _this.add(cell);
+                _this.cells[r].push(cell);
+            }
+        }
+        var start = { c: 0, r: 0 };
+        var end = { c: 1, r: 8 };
+        _this.drawLine(start, end);
+        var cells = BoardManager_1.BoardManager.getCells(start.c, start.r, end.c, end.r);
+        _this.markCells(cells);
         return _this;
     }
+    BoardContainer.prototype.markCells = function (cellPositions) {
+        for (var i = 0; i < cellPositions.length; i++) {
+            var cell = this.cells[cellPositions[i].r][cellPositions[i].c];
+            cell.mark();
+            this.bringToTop(cell);
+        }
+    };
+    BoardContainer.prototype.drawLine = function (p1, p2) {
+        var lineGraphics = new Phaser.GameObjects.Graphics(this.scene);
+        lineGraphics.x = -BoardContainer.BOARD_WIDTH / 2 + Cell_1.Cell.CELL_SIZE / 2;
+        lineGraphics.y = -BoardContainer.BOARD_HEIGHT / 2 + Cell_1.Cell.CELL_SIZE / 2;
+        this.add(lineGraphics);
+        lineGraphics.lineStyle(1.5, 0xFFFF00);
+        lineGraphics.moveTo(p1.c * Cell_1.Cell.CELL_SIZE, p1.r * Cell_1.Cell.CELL_SIZE);
+        lineGraphics.lineTo(p2.c * Cell_1.Cell.CELL_SIZE, p2.r * Cell_1.Cell.CELL_SIZE);
+        lineGraphics.stroke();
+    };
     BoardContainer.BOARD_WIDTH = 720;
-    BoardContainer.BOARD_HEIGHT = 900;
+    BoardContainer.BOARD_HEIGHT = 880;
     return BoardContainer;
 }(Phaser.GameObjects.Container));
 exports.BoardContainer = BoardContainer;
@@ -566,6 +601,29 @@ var BoardManager = /** @class */ (function () {
     };
     BoardManager.undo = function () {
         //
+    };
+    BoardManager.getCells = function (x0, y0, x1, y1) {
+        var cells = [];
+        var xDist = Math.abs(x1 - x0);
+        var xStep = x0 < x1 ? 1 : -1;
+        var yDist = -Math.abs(y1 - y0);
+        var yStep = y0 < y1 ? 1 : -1;
+        var error = xDist + yDist;
+        cells.push({ c: x0, r: y0 });
+        while (x0 !== x1 || y0 !== y1) {
+            if (2 * error - yDist > xDist - 2 * error) {
+                // horizontal step
+                error += yDist;
+                x0 += xStep;
+            }
+            else {
+                // vertical step
+                error += xDist;
+                y0 += yStep;
+            }
+            cells.push({ c: x0, r: y0 });
+        }
+        return cells;
     };
     return BoardManager;
 }());
@@ -626,6 +684,61 @@ var BoardScene = /** @class */ (function (_super) {
     return BoardScene;
 }(Phaser.Scene));
 exports.BoardScene = BoardScene;
+
+
+/***/ }),
+
+/***/ "./src/scenes/board-scene/Cell.ts":
+/*!****************************************!*\
+  !*** ./src/scenes/board-scene/Cell.ts ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var Cell = /** @class */ (function (_super) {
+    __extends(Cell, _super);
+    function Cell(scene, p) {
+        var _this = _super.call(this, scene) || this;
+        _this.p = p;
+        _this.cellOff = new Phaser.GameObjects.Graphics(_this.scene);
+        _this.cellOff.lineStyle(1, 0xFFFFFF);
+        _this.cellOff.strokeRect(0, 0, Cell.CELL_SIZE, Cell.CELL_SIZE);
+        _this.add(_this.cellOff);
+        _this.cellOn = new Phaser.GameObjects.Graphics(_this.scene);
+        _this.cellOn.lineStyle(2, 0xff4019);
+        _this.cellOn.strokeRect(0, 0, Cell.CELL_SIZE, Cell.CELL_SIZE);
+        _this.add(_this.cellOn);
+        _this.cellOn.visible = false;
+        return _this;
+    }
+    Cell.prototype.mark = function () {
+        this.cellOff.visible = false;
+        this.cellOn.visible = true;
+    };
+    Cell.prototype.unmark = function () {
+        this.cellOff.visible = true;
+        this.cellOn.visible = false;
+    };
+    Cell.CELL_SIZE = 80;
+    return Cell;
+}(Phaser.GameObjects.Container));
+exports.Cell = Cell;
 
 
 /***/ }),
