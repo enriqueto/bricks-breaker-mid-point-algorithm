@@ -1,0 +1,8 @@
+# System and IDE files
+tmp/*
+.vscode/*
+\.DS_Store
+.node_version
+node_modules
+\.DS_Store
+npm-debug.log
