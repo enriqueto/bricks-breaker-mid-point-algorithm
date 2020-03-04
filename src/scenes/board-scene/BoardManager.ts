@@ -22,6 +22,12 @@ export class BoardManager {
         
         cells.push({c: x0, r: y0});
 
+        let xCounter = 0;
+        let yCounter = 0;
+
+        let c = 0;
+        let r = 0;
+
         while (x0 !== x1 || y0 !== y1) {
             
             if (2 * error - yDist > xDist - 2 * error) {
@@ -30,14 +36,30 @@ export class BoardManager {
                 error += yDist;
                 x0 += xStep;
 
+                xCounter ++;
+
+                if (xCounter === 4) {
+
+                    xCounter = 0;
+                    c ++;
+                    cells.push({c: c , r: r});
+                } 
+
             } else {
                 
                 // vertical step
                 error += xDist;
                 y0 += yStep;
+
+                yCounter ++;
+
+                if (yCounter === 4) {
+
+                    yCounter = 0;
+                    r ++;
+                    cells.push({c: c , r: r});
+                }
             }
-    
-            cells.push({c: x0 , r: y0});
         }
 
         return cells;

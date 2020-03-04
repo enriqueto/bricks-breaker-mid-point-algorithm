@@ -36,7 +36,7 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         }
 
         const start = {c: 0, r: 0};
-        const end = {c: 35, r: 14};
+        const end = {c: 35, r: 17};
 
         this.drawLine(start, end);
 
@@ -49,8 +49,8 @@ export class BoardContainer extends Phaser.GameObjects.Container {
 
         for (let i = 0; i < cellPositions.length; i++) {
 
-            let r = Math.floor(cellPositions[i].r / 4);
-            let c = Math.floor(cellPositions[i].c / 4);
+            let r = cellPositions[i].r;
+            let c = cellPositions[i].c;
 
             const cell = this.cells[r][c];
             
