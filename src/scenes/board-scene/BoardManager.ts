@@ -25,16 +25,18 @@ export class BoardManager {
         while (x0 !== x1 || y0 !== y1) {
             
             if (2 * error - yDist > xDist - 2 * error) {
+
                 // horizontal step
                 error += yDist;
                 x0 += xStep;
+
             } else {
+                
                 // vertical step
                 error += xDist;
                 y0 += yStep;
             }
     
-
             cells.push({c: x0 , r: y0});
         }
 

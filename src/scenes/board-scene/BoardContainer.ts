@@ -16,15 +16,14 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         this.x = GameConstants.GAME_WIDTH / 2;
         this.y = GameConstants.GAME_HEIGHT / 2;
 
-        const background = new Phaser.GameObjects.Graphics(this.scene);
-        background.fillStyle(0xFFFFFF, .075);
-        background.fillRect(-BoardContainer.BOARD_WIDTH / 2, -BoardContainer.BOARD_HEIGHT / 2, BoardContainer.BOARD_WIDTH, BoardContainer.BOARD_HEIGHT);
-        this.add(background);
+        this.drawBackground();
 
         this.cells = [];
 
         for (let r = 0; r < 11; r ++) {
+
             this.cells[r] = [];
+
             for (let c = 0; c < 9; c ++) {
 
                 const cell = new Cell(this.scene, {c: c, r: r});
@@ -37,7 +36,7 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         }
 
         const start = {c: 0, r: 0};
-        const end = {c: 8, r: 5};
+        const end = {c: 35, r: 14};
 
         this.drawLine(start, end);
 
@@ -50,7 +49,10 @@ export class BoardContainer extends Phaser.GameObjects.Container {
 
         for (let i = 0; i < cellPositions.length; i++) {
 
-            const cell = this.cells[cellPositions[i].r] [cellPositions[i].c];
+            let r = Math.floor(cellPositions[i].r / 4);
+            let c = Math.floor(cellPositions[i].c / 4);
+
+            const cell = this.cells[r][c];
             
             cell.mark();
 
@@ -59,16 +61,46 @@ export class BoardContainer extends Phaser.GameObjects.Container {
     }
 
     private drawLine(p1: {c: number, r: number}, p2: {c: number, r: number}): void {
+
+        const cellSize = Cell.CELL_SIZE / 4;
         
         const lineGraphics = new Phaser.GameObjects.Graphics(this.scene);
-        lineGraphics.x = -BoardContainer.BOARD_WIDTH / 2 + Cell.CELL_SIZE / 2;
-        lineGraphics.y = -BoardContainer.BOARD_HEIGHT / 2  + Cell.CELL_SIZE / 2;
+        lineGraphics.x = -BoardContainer.BOARD_WIDTH / 2 + cellSize / 2;
+        lineGraphics.y = -BoardContainer.BOARD_HEIGHT / 2  + cellSize / 2;
 
         this.add(lineGraphics);
 
         lineGraphics.lineStyle(1.5, 0xFFFF00);
-        lineGraphics.moveTo(p1.c * Cell.CELL_SIZE, p1.r * Cell.CELL_SIZE);
-        lineGraphics.lineTo(p2.c * Cell.CELL_SIZE, p2.r * Cell.CELL_SIZE);
+        lineGraphics.moveTo(p1.c * cellSize, p1.r * cellSize);
+        lineGraphics.lineTo(p2.c * cellSize, p2.r * cellSize);
         lineGraphics.stroke();
+    }
+
+    private drawBackground(): void {
+
+        const background = new Phaser.GameObjects.Graphics(this.scene);
+        background.fillStyle(0xFFFFFF, .075);
+        background.fillRect(-BoardContainer.BOARD_WIDTH / 2, -BoardContainer.BOARD_HEIGHT / 2, BoardContainer.BOARD_WIDTH, BoardContainer.BOARD_HEIGHT);
+        this.add(background);
+
+        // dibujamos una rejilla
+        background.lineStyle(.25, 0xFFFFFF, .5);
+
+        const dx = -BoardContainer.BOARD_WIDTH / 2;
+        const dy = -BoardContainer.BOARD_HEIGHT / 2;
+
+        const cellSize = Cell.CELL_SIZE / 4;
+
+        for (let r = 0; r < 45; r ++) {
+            background.moveTo(0 + dx, r * cellSize + dy);
+            background.lineTo(36 * cellSize + dx, r * cellSize + dy);
+            background.stroke();            
+        }
+
+        for (let c = 0; c < 37; c ++) {
+            background.moveTo(c * cellSize + dx, dy);
+            background.lineTo(c * cellSize + dx, 44 * cellSize + dy);
+            background.stroke();            
+        }
     }
 }
