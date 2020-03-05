@@ -12,26 +12,27 @@ export class BoardManager {
 
         const ret: {c: number, r: number} [] = [p1];
 
-        const dy = p2.r - p1.r;
         const dx = p2.c - p1.c;
+        const dy = p2.r - p1.r;
 
-        let d = dy - (dx / 2);
+        let e = .5 * (dx - dy);
+        let x = p1.c;
+        let y = p1.r;
 
-        let c = p1.c;
-        let r = p1.r;
+        while ( x !== p2.c || y !== p2.r) {
 
-        while (c < p2.c) {
+            if (e <= 0) {
+                 
+                y ++;
+                e += dx;
 
-            c ++;
-
-            if ( d < 0) {
-                d += dy;
             } else {
-                d += dy - dx;
-                r ++;
+                
+                x++;
+                e -= dy;
             }
 
-            ret.push({c: c, r: r});
+            ret.push({c: x, r: y});
         }
 
         return ret;
