@@ -36,12 +36,11 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         }
 
         const start = {c: 0, r: 0};
-        const end = {c: 35, r: 17};
+        const end = {c: 8, r: 4};
 
         this.drawLine(start, end);
 
-        const cells = BoardManager.getCells(start.c, start.r, end.c, end.r);
-
+        const cells = BoardManager.getCells(start, end);
         this.markCells(cells);
     }
 
