@@ -10,7 +10,7 @@ export class BoardManager {
 
     public static line(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
 
-        if (p2.y > p1.x) {
+        if (p2.y > p1.y) {
             if (p2.x > p1.x) {
                 return BoardManager.lineNE(p1, p2);
             } else {
@@ -35,7 +35,7 @@ export class BoardManager {
         dy *= 2;
         let x = p1.x;
         let y = p1.y;
-        while ( x !== p2.x || y !== p2.y) {
+        while ( x !== p2.x && y !== p2.y) {
             if (e <= 0) {
                 y ++;
                 e += dx;
@@ -45,6 +45,19 @@ export class BoardManager {
             }
             ret.push({x: x, y: y});
         }
+
+        if (y === p2.y) {
+            while (x !== p2.x) {
+                x++;
+                ret.push({x: x, y: y});
+            }
+        } else if (x === p2.x) {
+            while (y !== p2.y) {
+                y++;
+                ret.push({x: x, y: y});
+            }
+        }
+
         return ret;
     }
 
@@ -114,7 +127,6 @@ export class BoardManager {
             }
             ret.push({x: x, y: y});
         }
-
         return ret;
     }
 }

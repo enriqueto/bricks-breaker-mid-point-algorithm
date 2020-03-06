@@ -4,6 +4,7 @@ import { HUD } from "./HUD";
 import { GUI } from "./GUI";
 import { BoardManager } from "./BoardManager";
 import { BoardContainer } from "./BoardContainer";
+import { Cell } from "./Cell";
 
 export class BoardScene extends Phaser.Scene {
 
@@ -39,4 +40,18 @@ export class BoardScene extends Phaser.Scene {
         this.gui = new GUI(this);
         this.add.existing(this.gui);
     }
-}
+
+    public update(): void {
+
+        let pointer = this.input.activePointer;
+
+        if (pointer.isDown) {
+
+            // pasamos a las coordenadas del board
+            const p1 = {x: 0, y: 5 * Cell.CELL_SIZE};
+            const p2 = {x: pointer.x - this.boardContainer.x, y: pointer.y - this.boardContainer.y};
+
+            this.boardContainer.drawLine(p1, p2);
+        }
+    }
+} 

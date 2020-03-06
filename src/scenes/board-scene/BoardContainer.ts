@@ -8,10 +8,15 @@ export class BoardContainer extends Phaser.GameObjects.Container {
     public static readonly BOARD_HEIGHT = 880;
 
     private cells: Cell [][];
+    private lineGraphics: Phaser.GameObjects.Graphics;
 
     constructor(scene: Phaser.Scene) {
         
         super(scene);
+
+        this.lineGraphics = new Phaser.GameObjects.Graphics(this.scene);
+        
+        this.add(this.lineGraphics);
 
         this.x = GameConstants.GAME_WIDTH / 2;
         this.y = GameConstants.GAME_HEIGHT / 2;
@@ -35,15 +40,46 @@ export class BoardContainer extends Phaser.GameObjects.Container {
                 this.cells[y].push(cell);
             }
         }
+    }
 
-        const start = {x: 4, y: 4};
-        const end = {x: 8, y: 9};
+    public drawLine(p1: {x: number, y: number}, p2: {x: number, y: number}): void {
 
-        this.drawLine(start, end);
+        let dx = p2.x - p1.x;
+        let dy = p2.y - p1.y;
 
-        const cells = BoardManager.line(start, end);
+        let s = dy / dx;
+
+        // se trata de buscar un punto lejano que este en el centro de una celda
+        let sign = dx > 0 ? 1 : -1;
+
+        p2.x = p1.x + sign * Cell.CELL_SIZE * 100;
+        p2.y = p1.y + sign * s * Cell.CELL_SIZE * 100;
+
+        p2.y = Math.round(p2.y / Cell.CELL_SIZE) * Cell.CELL_SIZE;
+
+        this.lineGraphics.clear();
+        this.lineGraphics.lineStyle(1, 0x00FF00);
+        this.lineGraphics.moveTo(p1.x, p1.y);
+        this.lineGraphics.lineTo(p2.x, p2.y);
+        this.lineGraphics.stroke();
+
+        // pasar a coordenadas de celda
+        const start = {x: 4, y: 10};
         
-        this.markCells(cells);
+        dx = (p2.x - p1.x) / Cell.CELL_SIZE;
+        dy = (p2.y - p1.y) / Cell.CELL_SIZE;
+
+        const end = {x: start.x + dx, y: start.y + dy};
+
+        const cells = BoardManager.line(start, end); 
+        this.markCells(cells);   
+    }
+
+    private markCell(p: {x: number, y: number}): void {
+
+        const cell = this.cells[p.y] [p.x];
+        cell.mark();
+        this.bringToTop(cell);
     }
 
     private markCells(cellPositions: {x: number, y: number}[]): void {
@@ -52,27 +88,17 @@ export class BoardContainer extends Phaser.GameObjects.Container {
             return;
         }
 
+        for (let y = 0; y < this.cells.length; y ++) {
+            for (let x = 0;  x < this.cells[0].length; x ++) {
+                this.cells[y][x].unmark();
+            }
+        }
+
         for (let i = 0; i < cellPositions.length; i++) {
 
-            const cell = this.cells[cellPositions[i].y] [cellPositions[i].x];
-            
-            cell.mark();
-
-            this.bringToTop(cell);
+            if (cellPositions[i].x < 9 && cellPositions[i].x >= 0 && cellPositions[i].y >= 0 && cellPositions[i].y < 11) {
+                this.markCell(cellPositions[i]);
+            }
         }
-    }
-
-    private drawLine(p1: {x: number, y: number}, p2: {x: number, y: number}): void {
-        
-        const lineGraphics = new Phaser.GameObjects.Graphics(this.scene);
-        lineGraphics.x = -BoardContainer.BOARD_WIDTH / 2 + Cell.CELL_SIZE / 2;
-        lineGraphics.y = -BoardContainer.BOARD_HEIGHT / 2  + Cell.CELL_SIZE / 2;
-
-        this.add(lineGraphics);
-
-        lineGraphics.lineStyle(1.5, 0xFFFF00);
-        lineGraphics.moveTo(p1.x * Cell.CELL_SIZE, p1.y * Cell.CELL_SIZE);
-        lineGraphics.lineTo(p2.x * Cell.CELL_SIZE, p2.y * Cell.CELL_SIZE);
-        lineGraphics.stroke();
     }
 }

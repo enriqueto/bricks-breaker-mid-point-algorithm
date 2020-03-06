@@ -533,6 +533,8 @@ var BoardContainer = /** @class */ (function (_super) {
     __extends(BoardContainer, _super);
     function BoardContainer(scene) {
         var _this = _super.call(this, scene) || this;
+        _this.lineGraphics = new Phaser.GameObjects.Graphics(_this.scene);
+        _this.add(_this.lineGraphics);
         _this.x = GameConstants_1.GameConstants.GAME_WIDTH / 2;
         _this.y = GameConstants_1.GameConstants.GAME_HEIGHT / 2;
         var background = new Phaser.GameObjects.Graphics(_this.scene);
@@ -540,42 +542,59 @@ var BoardContainer = /** @class */ (function (_super) {
         background.fillRect(-BoardContainer.BOARD_WIDTH / 2, -BoardContainer.BOARD_HEIGHT / 2, BoardContainer.BOARD_WIDTH, BoardContainer.BOARD_HEIGHT);
         _this.add(background);
         _this.cells = [];
-        for (var r = 0; r < 11; r++) {
-            _this.cells[r] = [];
-            for (var c = 0; c < 9; c++) {
-                var cell = new Cell_1.Cell(_this.scene, { c: c, r: r });
-                cell.x = -BoardContainer.BOARD_WIDTH / 2 + Cell_1.Cell.CELL_SIZE * c;
-                cell.y = -BoardContainer.BOARD_HEIGHT / 2 + Cell_1.Cell.CELL_SIZE * r;
+        for (var y = 0; y < 11; y++) {
+            _this.cells[y] = [];
+            for (var x = 0; x < 9; x++) {
+                var cell = new Cell_1.Cell(_this.scene, { x: x, y: y });
+                cell.x = -BoardContainer.BOARD_WIDTH / 2 + Cell_1.Cell.CELL_SIZE * x;
+                cell.y = -BoardContainer.BOARD_HEIGHT / 2 + Cell_1.Cell.CELL_SIZE * y;
                 _this.add(cell);
-                _this.cells[r].push(cell);
+                _this.cells[y].push(cell);
             }
         }
-        var start = { c: 4, r: 10 };
-        var end = { c: 0, r: 4 };
-        _this.drawLine(start, end);
-        var cells = BoardManager_1.BoardManager.line(start, end);
-        _this.markCells(cells);
         return _this;
     }
+    BoardContainer.prototype.drawLine = function (p1, p2) {
+        var dx = p2.x - p1.x;
+        var dy = p2.y - p1.y;
+        var s = dy / dx;
+        // se trata de buscar un punto lejano que este en el centro de una celda
+        var sign = dx > 0 ? 1 : -1;
+        p2.x = p1.x + sign * Cell_1.Cell.CELL_SIZE * 100;
+        p2.y = p1.y + sign * s * Cell_1.Cell.CELL_SIZE * 100;
+        p2.y = Math.round(p2.y / Cell_1.Cell.CELL_SIZE) * Cell_1.Cell.CELL_SIZE;
+        this.lineGraphics.clear();
+        this.lineGraphics.lineStyle(1, 0x00FF00);
+        this.lineGraphics.moveTo(p1.x, p1.y);
+        this.lineGraphics.lineTo(p2.x, p2.y);
+        this.lineGraphics.stroke();
+        // pasar a coordenadas de celda
+        var start = { x: 4, y: 10 };
+        dx = (p2.x - p1.x) / Cell_1.Cell.CELL_SIZE;
+        dy = (p2.y - p1.y) / Cell_1.Cell.CELL_SIZE;
+        var end = { x: start.x + dx, y: start.y + dy };
+        var cells = BoardManager_1.BoardManager.line(start, end);
+        this.markCells(cells);
+    };
+    BoardContainer.prototype.markCell = function (p) {
+        var cell = this.cells[p.y][p.x];
+        cell.mark();
+        this.bringToTop(cell);
+    };
     BoardContainer.prototype.markCells = function (cellPositions) {
         if (!cellPositions) {
             return;
         }
-        for (var i = 0; i < cellPositions.length; i++) {
-            var cell = this.cells[cellPositions[i].r][cellPositions[i].c];
-            cell.mark();
-            this.bringToTop(cell);
+        for (var y = 0; y < this.cells.length; y++) {
+            for (var x = 0; x < this.cells[0].length; x++) {
+                this.cells[y][x].unmark();
+            }
         }
-    };
-    BoardContainer.prototype.drawLine = function (p1, p2) {
-        var lineGraphics = new Phaser.GameObjects.Graphics(this.scene);
-        lineGraphics.x = -BoardContainer.BOARD_WIDTH / 2 + Cell_1.Cell.CELL_SIZE / 2;
-        lineGraphics.y = -BoardContainer.BOARD_HEIGHT / 2 + Cell_1.Cell.CELL_SIZE / 2;
-        this.add(lineGraphics);
-        lineGraphics.lineStyle(1.5, 0xFFFF00);
-        lineGraphics.moveTo(p1.c * Cell_1.Cell.CELL_SIZE, p1.r * Cell_1.Cell.CELL_SIZE);
-        lineGraphics.lineTo(p2.c * Cell_1.Cell.CELL_SIZE, p2.r * Cell_1.Cell.CELL_SIZE);
-        lineGraphics.stroke();
+        for (var i = 0; i < cellPositions.length; i++) {
+            if (cellPositions[i].x < 9 && cellPositions[i].x >= 0 && cellPositions[i].y >= 0 && cellPositions[i].y < 11) {
+                this.markCell(cellPositions[i]);
+            }
+        }
     };
     BoardContainer.BOARD_WIDTH = 720;
     BoardContainer.BOARD_HEIGHT = 880;
@@ -606,16 +625,18 @@ var BoardManager = /** @class */ (function () {
         //
     };
     BoardManager.line = function (p1, p2) {
-        if (p2.r > p1.r) {
-            if (p2.c > p1.c) {
+        if (p2.y > p1.x) {
+            if (p2.x > p1.x) {
+                console.log("NE");
                 return BoardManager.lineNE(p1, p2);
             }
             else {
+                console.log("NW");
                 return BoardManager.lineNW(p1, p2);
             }
         }
         else {
-            if (p2.c > p1.c) {
+            if (p2.x > p1.x) {
                 return BoardManager.lineSE(p1, p2);
             }
             else {
@@ -625,14 +646,14 @@ var BoardManager = /** @class */ (function () {
     };
     BoardManager.lineNE = function (p1, p2) {
         var ret = [p1];
-        var dx = p2.c - p1.c;
-        var dy = p2.r - p1.r;
+        var dx = p2.x - p1.x;
+        var dy = p2.y - p1.y;
         var e = dx - dy;
         dx *= 2;
         dy *= 2;
-        var x = p1.c;
-        var y = p1.r;
-        while (x !== p2.c || y !== p2.r) {
+        var x = p1.x;
+        var y = p1.y;
+        while (x !== p2.x && y !== p2.y) {
             if (e <= 0) {
                 y++;
                 e += dx;
@@ -641,20 +662,32 @@ var BoardManager = /** @class */ (function () {
                 x++;
                 e -= dy;
             }
-            ret.push({ c: x, r: y });
+            ret.push({ x: x, y: y });
+        }
+        if (y === p2.y) {
+            while (x !== p2.x) {
+                x++;
+                ret.push({ x: x, y: y });
+            }
+        }
+        else if (x === p2.x) {
+            while (y !== p2.y) {
+                y++;
+                ret.push({ x: x, y: y });
+            }
         }
         return ret;
     };
     BoardManager.lineNW = function (p1, p2) {
         var ret = [p1];
-        var dx = p2.c - p1.c;
-        var dy = p2.r - p1.r;
+        var dx = p2.x - p1.x;
+        var dy = p2.y - p1.y;
         var e = dx + dy;
         dx *= 2;
         dy *= 2;
-        var x = p1.c;
-        var y = p1.r;
-        while (x !== p2.c || y !== p2.r) {
+        var x = p1.x;
+        var y = p1.y;
+        while (x !== p2.x || y !== p2.y) {
             if (e <= 0) {
                 x--;
                 e += dy;
@@ -663,20 +696,20 @@ var BoardManager = /** @class */ (function () {
                 y++;
                 e += dx;
             }
-            ret.push({ c: x, r: y });
+            ret.push({ x: x, y: y });
         }
         return ret;
     };
     BoardManager.lineSE = function (p1, p2) {
         var ret = [p1];
-        var dx = p2.c - p1.c;
-        var dy = p2.r - p1.r;
+        var dx = p2.x - p1.x;
+        var dy = p2.y - p1.y;
         var e = dx + dy;
         dx *= 2;
         dy *= 2;
-        var x = p1.c;
-        var y = p1.r;
-        while (x !== p2.c || y !== p2.r) {
+        var x = p1.x;
+        var y = p1.y;
+        while (x !== p2.x || y !== p2.y) {
             if (e <= 0) {
                 y--;
                 e += dx;
@@ -685,20 +718,20 @@ var BoardManager = /** @class */ (function () {
                 x++;
                 e += dy;
             }
-            ret.push({ c: x, r: y });
+            ret.push({ x: x, y: y });
         }
         return ret;
     };
     BoardManager.lineSW = function (p1, p2) {
         var ret = [p1];
-        var dx = p2.c - p1.c;
-        var dy = p2.r - p1.r;
+        var dx = p2.x - p1.x;
+        var dy = p2.y - p1.y;
         var e = dx - dy;
         dx *= 2;
         dy *= 2;
-        var x = p1.c;
-        var y = p1.r;
-        while (x !== p2.c || y !== p2.r) {
+        var x = p1.x;
+        var y = p1.y;
+        while (x !== p2.x || y !== p2.y) {
             if (e <= 0) {
                 x--;
                 e -= dy;
@@ -707,7 +740,7 @@ var BoardManager = /** @class */ (function () {
                 y--;
                 e += dx;
             }
-            ret.push({ c: x, r: y });
+            ret.push({ x: x, y: y });
         }
         return ret;
     };
@@ -747,6 +780,7 @@ var HUD_1 = __webpack_require__(/*! ./HUD */ "./src/scenes/board-scene/HUD.ts");
 var GUI_1 = __webpack_require__(/*! ./GUI */ "./src/scenes/board-scene/GUI.ts");
 var BoardManager_1 = __webpack_require__(/*! ./BoardManager */ "./src/scenes/board-scene/BoardManager.ts");
 var BoardContainer_1 = __webpack_require__(/*! ./BoardContainer */ "./src/scenes/board-scene/BoardContainer.ts");
+var Cell_1 = __webpack_require__(/*! ./Cell */ "./src/scenes/board-scene/Cell.ts");
 var BoardScene = /** @class */ (function (_super) {
     __extends(BoardScene, _super);
     function BoardScene() {
@@ -766,6 +800,15 @@ var BoardScene = /** @class */ (function (_super) {
         this.add.existing(this.hud);
         this.gui = new GUI_1.GUI(this);
         this.add.existing(this.gui);
+    };
+    BoardScene.prototype.update = function () {
+        var pointer = this.input.activePointer;
+        if (pointer.isDown) {
+            // pasamos a las coordenadas del board
+            var p1 = { x: 0, y: 5 * Cell_1.Cell.CELL_SIZE };
+            var p2 = { x: pointer.x - this.boardContainer.x, y: pointer.y - this.boardContainer.y };
+            this.boardContainer.drawLine(p1, p2);
+        }
     };
     return BoardScene;
 }(Phaser.Scene));

@@ -14,12 +14,12 @@ export class Cell extends Phaser.GameObjects.Container {
         this.p = p;
 
         this.cellOff = new Phaser.GameObjects.Graphics(this.scene);
-        this.cellOff.lineStyle(1, 0xFFFFFF);
+        this.cellOff.lineStyle(.5, 0xFFFFFF, .5);
         this.cellOff.strokeRect(0, 0, Cell.CELL_SIZE, Cell.CELL_SIZE);
         this.add(this.cellOff);
 
         this.cellOn = new Phaser.GameObjects.Graphics(this.scene);
-        this.cellOn.lineStyle(2, 0xff4019);
+        this.cellOn.lineStyle(3.5, 0xff4019);
         this.cellOn.strokeRect(0, 0, Cell.CELL_SIZE, Cell.CELL_SIZE);
         this.add(this.cellOn);
 
