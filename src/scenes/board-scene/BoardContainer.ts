@@ -4,8 +4,8 @@ import { BoardManager } from "./BoardManager";
 
 export class BoardContainer extends Phaser.GameObjects.Container {
 
-    public static readonly BOARD_WIDTH = 720;
-    public static readonly BOARD_HEIGHT = 880;
+    public static readonly BOARD_WIDTH = 9;
+    public static readonly BOARD_HEIGHT = 11;
 
     private cells: Cell [][];
     private lineGraphics: Phaser.GameObjects.Graphics;
@@ -23,18 +23,18 @@ export class BoardContainer extends Phaser.GameObjects.Container {
 
         const background = new Phaser.GameObjects.Graphics(this.scene);
         background.fillStyle(0xFFFFFF, .075);
-        background.fillRect(-BoardContainer.BOARD_WIDTH / 2, -BoardContainer.BOARD_HEIGHT / 2, BoardContainer.BOARD_WIDTH, BoardContainer.BOARD_HEIGHT);
+        background.fillRect(-BoardContainer.BOARD_WIDTH / 2 * Cell.CELL_SIZE, -BoardContainer.BOARD_HEIGHT / 2 * Cell.CELL_SIZE, BoardContainer.BOARD_WIDTH * Cell.CELL_SIZE, BoardContainer.BOARD_HEIGHT * Cell.CELL_SIZE);
         this.add(background);
 
         this.cells = [];
 
-        for (let y = 0; y < 11; y ++) {
+        for (let y = 0; y < BoardContainer.BOARD_HEIGHT; y ++) {
             this.cells[y] = [];
-            for (let x = 0; x < 9; x ++) {
+            for (let x = 0; x < BoardContainer.BOARD_WIDTH; x ++) {
 
                 const cell = new Cell(this.scene, {x: x, y: y});
-                cell.x = -BoardContainer.BOARD_WIDTH / 2 + Cell.CELL_SIZE * x;
-                cell.y = -BoardContainer.BOARD_HEIGHT / 2 + Cell.CELL_SIZE * y;
+                cell.x = -BoardContainer.BOARD_WIDTH / 2 * Cell.CELL_SIZE + Cell.CELL_SIZE * x;
+                cell.y = -BoardContainer.BOARD_HEIGHT / 2 * Cell.CELL_SIZE + Cell.CELL_SIZE * y;
                 this.add(cell);
 
                 this.cells[y].push(cell);
@@ -93,7 +93,9 @@ export class BoardContainer extends Phaser.GameObjects.Container {
                 this.cells[y][x].unmark();
             }
         }
-
+        
+        // console.log(cellPositions.length);
+        
         for (let i = 0; i < cellPositions.length; i++) {
 
             if (cellPositions[i].x < 9 && cellPositions[i].x >= 0 && cellPositions[i].y >= 0 && cellPositions[i].y < 11) {

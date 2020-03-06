@@ -35,7 +35,7 @@ export class BoardManager {
         dy *= 2;
         let x = p1.x;
         let y = p1.y;
-        while ( x !== p2.x && y !== p2.y) {
+        while ( x !== p2.x && y !== p2.y && x >= 0 && x < 9 && y >= 0 && y < 11) {
             if (e <= 0) {
                 y ++;
                 e += dx;
@@ -71,7 +71,7 @@ export class BoardManager {
         dy *= 2;
         let x = p1.x;
         let y = p1.y;
-        while ( x !== p2.x || y !== p2.y) {
+        while ( x !== p2.x && y !== p2.y && x >= 0 && x < 9 && y >= 0 && y < 11) {
             if (e <= 0) {
                 x --;
                 e += dy;
@@ -94,7 +94,9 @@ export class BoardManager {
         dy *= 2;
         let x = p1.x;
         let y = p1.y;
-        while ( x !== p2.x || y !== p2.y) {
+
+        while (x !== p2.x && y !== p2.y && x >= 0 && x < 9 && y >= 0 && y < 11) {
+
             if (e <= 0) {
                 y --;
                 e += dx;
@@ -117,7 +119,7 @@ export class BoardManager {
         dy *= 2;
         let x = p1.x;
         let y = p1.y;
-        while ( x !== p2.x || y !== p2.y) {
+        while ( x !== p2.x && y !== p2.y && x >= 0 && x < 9 && y >= 0 && y < 11) {
             if (e <= 0) {
                 x --;
                 e -= dy;
