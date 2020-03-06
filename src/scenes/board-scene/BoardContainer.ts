@@ -16,42 +16,45 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         this.x = GameConstants.GAME_WIDTH / 2;
         this.y = GameConstants.GAME_HEIGHT / 2;
 
-        this.drawBackground();
+        const background = new Phaser.GameObjects.Graphics(this.scene);
+        background.fillStyle(0xFFFFFF, .075);
+        background.fillRect(-BoardContainer.BOARD_WIDTH / 2, -BoardContainer.BOARD_HEIGHT / 2, BoardContainer.BOARD_WIDTH, BoardContainer.BOARD_HEIGHT);
+        this.add(background);
 
         this.cells = [];
 
-        for (let r = 0; r < 11; r ++) {
+        for (let y = 0; y < 11; y ++) {
+            this.cells[y] = [];
+            for (let x = 0; x < 9; x ++) {
 
-            this.cells[r] = [];
-
-            for (let c = 0; c < 9; c ++) {
-
-                const cell = new Cell(this.scene, {c: c, r: r});
-                cell.x = -BoardContainer.BOARD_WIDTH / 2 + Cell.CELL_SIZE * c;
-                cell.y = -BoardContainer.BOARD_HEIGHT / 2 + Cell.CELL_SIZE * r;
+                const cell = new Cell(this.scene, {x: x, y: y});
+                cell.x = -BoardContainer.BOARD_WIDTH / 2 + Cell.CELL_SIZE * x;
+                cell.y = -BoardContainer.BOARD_HEIGHT / 2 + Cell.CELL_SIZE * y;
                 this.add(cell);
 
-                this.cells[r].push(cell);
+                this.cells[y].push(cell);
             }
         }
 
-        const start = {c: 0, r: 0};
-        const end = {c: 8, r: 4};
+        const start = {x: 4, y: 4};
+        const end = {x: 8, y: 9};
 
         this.drawLine(start, end);
 
-        const cells = BoardManager.getCells(start, end);
+        const cells = BoardManager.line(start, end);
+        
         this.markCells(cells);
     }
 
-    private markCells(cellPositions: {c: number, r: number}[]): void {
+    private markCells(cellPositions: {x: number, y: number}[]): void {
+
+        if (!cellPositions) {
+            return;
+        }
 
         for (let i = 0; i < cellPositions.length; i++) {
 
-            let r = cellPositions[i].r;
-            let c = cellPositions[i].c;
-
-            const cell = this.cells[r][c];
+            const cell = this.cells[cellPositions[i].y] [cellPositions[i].x];
             
             cell.mark();
 
@@ -59,47 +62,17 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         }
     }
 
-    private drawLine(p1: {c: number, r: number}, p2: {c: number, r: number}): void {
-
-        const cellSize = Cell.CELL_SIZE / 4;
+    private drawLine(p1: {x: number, y: number}, p2: {x: number, y: number}): void {
         
         const lineGraphics = new Phaser.GameObjects.Graphics(this.scene);
-        lineGraphics.x = -BoardContainer.BOARD_WIDTH / 2 + cellSize / 2;
-        lineGraphics.y = -BoardContainer.BOARD_HEIGHT / 2  + cellSize / 2;
+        lineGraphics.x = -BoardContainer.BOARD_WIDTH / 2 + Cell.CELL_SIZE / 2;
+        lineGraphics.y = -BoardContainer.BOARD_HEIGHT / 2  + Cell.CELL_SIZE / 2;
 
         this.add(lineGraphics);
 
         lineGraphics.lineStyle(1.5, 0xFFFF00);
-        lineGraphics.moveTo(p1.c * cellSize, p1.r * cellSize);
-        lineGraphics.lineTo(p2.c * cellSize, p2.r * cellSize);
+        lineGraphics.moveTo(p1.x * Cell.CELL_SIZE, p1.y * Cell.CELL_SIZE);
+        lineGraphics.lineTo(p2.x * Cell.CELL_SIZE, p2.y * Cell.CELL_SIZE);
         lineGraphics.stroke();
-    }
-
-    private drawBackground(): void {
-
-        const background = new Phaser.GameObjects.Graphics(this.scene);
-        background.fillStyle(0xFFFFFF, .075);
-        background.fillRect(-BoardContainer.BOARD_WIDTH / 2, -BoardContainer.BOARD_HEIGHT / 2, BoardContainer.BOARD_WIDTH, BoardContainer.BOARD_HEIGHT);
-        this.add(background);
-
-        // dibujamos una rejilla
-        background.lineStyle(.25, 0xFFFFFF, .5);
-
-        const dx = -BoardContainer.BOARD_WIDTH / 2;
-        const dy = -BoardContainer.BOARD_HEIGHT / 2;
-
-        const cellSize = Cell.CELL_SIZE / 4;
-
-        for (let r = 0; r < 45; r ++) {
-            background.moveTo(0 + dx, r * cellSize + dy);
-            background.lineTo(36 * cellSize + dx, r * cellSize + dy);
-            background.stroke();            
-        }
-
-        for (let c = 0; c < 37; c ++) {
-            background.moveTo(c * cellSize + dx, dy);
-            background.lineTo(c * cellSize + dx, 44 * cellSize + dy);
-            background.stroke();            
-        }
     }
 }

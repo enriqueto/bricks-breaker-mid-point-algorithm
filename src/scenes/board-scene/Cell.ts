@@ -2,12 +2,12 @@ export class Cell extends Phaser.GameObjects.Container {
 
     public static readonly CELL_SIZE = 80;
 
-    public p: {c: number, r: number};
+    public p: {x: number, y: number};
 
     private cellOff: Phaser.GameObjects.Graphics;
     private cellOn: Phaser.GameObjects.Graphics;
     
-    constructor(scene: Phaser.Scene, p: {c: number, r: number}) {
+    constructor(scene: Phaser.Scene, p: {x: number, y: number}) {
         
         super(scene);
         
