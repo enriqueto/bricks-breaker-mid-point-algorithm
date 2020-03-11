@@ -5,6 +5,7 @@ import { GUI } from "./GUI";
 import { BricksBreakerEngine } from "../../engine/BricksBreakerEngine";
 import { BoardContainer } from "./BoardContainer";
 import { Cell } from "./Cell";
+import { GameVars } from "../../GameVars";
 
 export class BoardScene extends Phaser.Scene {
 
@@ -25,7 +26,7 @@ export class BoardScene extends Phaser.Scene {
 
         GameManager.setCurrentScene(this);
 
-        const bricksBreakerEngine = new BricksBreakerEngine();
+        const bricksBreakerEngine = new BricksBreakerEngine(BoardContainer.BOARD_WIDTH, BoardContainer.BOARD_HEIGHT, GameVars.blocks);
 
         const background = this.add.graphics();
         background.fillGradientStyle(0x235e6e, 0x235e6e, 0x220e29, 0x220e29, 1);

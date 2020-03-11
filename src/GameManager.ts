@@ -5,6 +5,13 @@ export class GameManager {
 
     public static init(): void {
 
+
+        GameVars.blocks = [
+            {x: 6, y: 4, hits: 10},
+            {x: 2, y: 6, hits: 20},
+            {x: 3, y: 2, hits: 15}
+        ];
+
         if (GameVars.currentScene.sys.game.device.os.desktop) {
 
             GameVars.scaleY = 1;
@@ -54,7 +61,6 @@ export class GameManager {
 
         GameVars.currentScene.scene.start("BoardScene");
     }
-
 
     public static writeGameData(): void {
 

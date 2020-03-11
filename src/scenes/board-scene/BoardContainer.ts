@@ -1,6 +1,8 @@
 import { GameConstants } from "../../GameConstants";
 import { Cell } from "./Cell";
 import { BricksBreakerEngine } from "../../engine/BricksBreakerEngine";
+import { GameVars } from "../../GameVars";
+import { Block } from "./Block";
 
 export class BoardContainer extends Phaser.GameObjects.Container {
 
@@ -40,6 +42,18 @@ export class BoardContainer extends Phaser.GameObjects.Container {
                 this.cells[y].push(cell);
             }
         }
+
+        // AÑADIMOS LOS BLOQUES
+        for (let i = 0; i < GameVars.blocks.length; i ++) {
+
+            const x = GameVars.blocks[i].x;
+            const y = GameVars.blocks[i].y;
+
+            const block = new Block(this.scene, {x: x, y: y}, GameVars.blocks[i].hits);
+            block.x = -BoardContainer.BOARD_WIDTH / 2 * Cell.CELL_SIZE + Cell.CELL_SIZE * x;
+            block.y = -BoardContainer.BOARD_HEIGHT / 2 * Cell.CELL_SIZE + Cell.CELL_SIZE * y;
+            this.add(block);
+        }
     }
 
     public drawLine(p1: {x: number, y: number}, p2: {x: number, y: number}): void {
@@ -47,13 +61,13 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         let dx = p2.x - p1.x;
         let dy = p2.y - p1.y;
 
-        let s = dy / dx;
+        let slope = dy / dx;
 
         // se trata de buscar un punto lejano que este en el centro de una celda
         let sign = dx > 0 ? 1 : -1;
 
         p2.x = p1.x + sign * Cell.CELL_SIZE * 100;
-        p2.y = p1.y + sign * s * Cell.CELL_SIZE * 100;
+        p2.y = p1.y + sign * slope * Cell.CELL_SIZE * 100;
 
         p2.y = Math.round(p2.y / Cell.CELL_SIZE) * Cell.CELL_SIZE;
 

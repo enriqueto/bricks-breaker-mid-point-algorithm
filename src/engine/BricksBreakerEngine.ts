@@ -2,9 +2,17 @@ export class BricksBreakerEngine {
 
     public static currentInstance: BricksBreakerEngine;
 
-    constructor() {
+    private height: number;
+    private width: number;
+    private blocks:  {x: number, y: number, hits: number} [];
+
+    constructor(widht: number, height: number, blocks: {x: number, y: number, hits: number} []) {
         
         BricksBreakerEngine.currentInstance = this;
+
+        this.width = widht;
+        this.height = height;
+        this.blocks = blocks;
     }
 
     public line(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
@@ -34,7 +42,7 @@ export class BricksBreakerEngine {
         dy *= 2;
         let x = p1.x;
         let y = p1.y;
-        while ( x !== p2.x && y !== p2.y && x >= 0 && x < 9 && y >= 0 && y < 11) {
+        while ( x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
             if (e <= 0) {
                 y ++;
                 e += dx;
@@ -42,16 +50,6 @@ export class BricksBreakerEngine {
                 x++;
                 e -= dy;
             }
-            ret.push({x: x, y: y});
-        }
-
-        while (x !== p2.x) {
-            x++;
-            ret.push({x: x, y: y});
-        }
-    
-        while (y !== p2.y) {
-            y++;
             ret.push({x: x, y: y});
         }
 
@@ -68,7 +66,7 @@ export class BricksBreakerEngine {
         dy *= 2;
         let x = p1.x;
         let y = p1.y;
-        while ( x !== p2.x && y !== p2.y && x >= 0 && x < 9 && y >= 0 && y < 11) {
+        while ( x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
             if (e <= 0) {
                 x --;
                 e += dy;
@@ -76,16 +74,6 @@ export class BricksBreakerEngine {
                 y ++;
                 e += dx;
             }
-            ret.push({x: x, y: y});
-        }
-
-        while (x !== p2.x) {
-            x--;
-            ret.push({x: x, y: y});
-        }
-    
-        while (y !== p2.y) {
-            y++;
             ret.push({x: x, y: y});
         }
 
@@ -103,7 +91,7 @@ export class BricksBreakerEngine {
         let x = p1.x;
         let y = p1.y;
 
-        while (x !== p2.x && y !== p2.y && x >= 0 && x < 9 && y >= 0 && y < 11) {
+        while (x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
 
             if (e <= 0) {
                 y --;
@@ -112,16 +100,6 @@ export class BricksBreakerEngine {
                 x++;
                 e += dy;
             }
-            ret.push({x: x, y: y});
-        }
-
-        while (x !== p2.x) {
-            x++;
-            ret.push({x: x, y: y});
-        }
-    
-        while (y !== p2.y) {
-            y--;
             ret.push({x: x, y: y});
         }
 
@@ -138,7 +116,7 @@ export class BricksBreakerEngine {
         dy *= 2;
         let x = p1.x;
         let y = p1.y;
-        while ( x !== p2.x && y !== p2.y && x >= 0 && x < 9 && y >= 0 && y < 11) {
+        while ( x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
             if (e <= 0) {
                 x --;
                 e -= dy;
@@ -146,16 +124,6 @@ export class BricksBreakerEngine {
                 y --;
                 e += dx;
             }
-            ret.push({x: x, y: y});
-        }
-
-        while (x !== p2.x) {
-            x--;
-            ret.push({x: x, y: y});
-        }
-    
-        while (y !== p2.y) {
-            y--;
             ret.push({x: x, y: y});
         }
 
