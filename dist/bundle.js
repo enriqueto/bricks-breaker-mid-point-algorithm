@@ -395,6 +395,7 @@ var BricksBreakerEngine = /** @class */ (function () {
                 cells = this.lineSW(p1, p2);
             }
         }
+        // ver si alguna de las celdas de la trayectoria corresponde a un bloque
         var i;
         var j;
         var collision = false;
@@ -789,28 +790,29 @@ var BoardContainer = /** @class */ (function (_super) {
         }
         return _this;
     }
-    BoardContainer.prototype.drawRay = function (p1, p2) {
-        var dx = p2.x - p1.x;
-        var dy = p2.y - p1.y;
+    BoardContainer.prototype.drawRay = function (p) {
+        var p0 = { x: 0, y: 5 * Cell_1.Cell.CELL_SIZE };
+        var dx = p.x - p0.x;
+        var dy = p.y - p0.y;
         var slope = dy / dx;
         // se trata de buscar un punto lejano que este en el centro de una celda
         var sign = dx > 0 ? 1 : -1;
-        p2.x = p1.x + sign * Cell_1.Cell.CELL_SIZE * 100;
-        p2.y = p1.y + sign * slope * Cell_1.Cell.CELL_SIZE * 100;
-        p2.y = Math.round(p2.y / Cell_1.Cell.CELL_SIZE) * Cell_1.Cell.CELL_SIZE;
+        p.x = p0.x + sign * Cell_1.Cell.CELL_SIZE * 100;
+        p.y = p0.y + sign * slope * Cell_1.Cell.CELL_SIZE * 100;
+        p.y = Math.round(p.y / Cell_1.Cell.CELL_SIZE) * Cell_1.Cell.CELL_SIZE;
         // pasar a coordenadas de celda
         var start = { x: 4, y: 10 };
-        dx = (p2.x - p1.x) / Cell_1.Cell.CELL_SIZE;
-        dy = (p2.y - p1.y) / Cell_1.Cell.CELL_SIZE;
+        dx = (p.x - p0.x) / Cell_1.Cell.CELL_SIZE;
+        dy = (p.y - p0.y) / Cell_1.Cell.CELL_SIZE;
         var end = { x: start.x + dx, y: start.y + dy };
         var trajectory = BricksBreakerEngine_1.BricksBreakerEngine.currentInstance.getTrajectory(start, end);
         var vertices;
         if (trajectory !== null) {
             var correctedSlope = dy / dx;
-            vertices = this.getTrajectoryVertices(p1, correctedSlope, trajectory);
+            vertices = this.getTrajectoryVertices(p, correctedSlope, trajectory);
         }
         else {
-            vertices = [p1, p2];
+            vertices = [p0, p];
         }
         this.drawLineSegments(vertices);
     };
@@ -834,6 +836,22 @@ var BoardContainer = /** @class */ (function (_super) {
                 this.markCell(cellPositions[i]);
             }
         }
+    };
+    BoardContainer.prototype.getGridEndPoint = function (p1, p2) {
+        var dx = p2.x - p1.x;
+        var dy = p2.y - p1.y;
+        var slope = dy / dx;
+        // se trata de buscar un punto lejano que este en el centro de una celda
+        var sign = dx > 0 ? 1 : -1;
+        p2.x = p1.x + sign * Cell_1.Cell.CELL_SIZE * 100;
+        p2.y = p1.y + sign * slope * Cell_1.Cell.CELL_SIZE * 100;
+        p2.y = Math.round(p2.y / Cell_1.Cell.CELL_SIZE) * Cell_1.Cell.CELL_SIZE;
+        // pasar a coordenadas de celda
+        var start = { x: 4, y: 10 };
+        dx = (p2.x - p1.x) / Cell_1.Cell.CELL_SIZE;
+        dy = (p2.y - p1.y) / Cell_1.Cell.CELL_SIZE;
+        var end = { x: start.x + dx, y: start.y + dy };
+        return { start: start, end: end };
     };
     BoardContainer.prototype.drawLineSegments = function (vertices) {
         if (vertices === null || vertices.length < 2) {
@@ -912,7 +930,6 @@ var HUD_1 = __webpack_require__(/*! ./HUD */ "./src/scenes/board-scene/HUD.ts");
 var GUI_1 = __webpack_require__(/*! ./GUI */ "./src/scenes/board-scene/GUI.ts");
 var BricksBreakerEngine_1 = __webpack_require__(/*! ../../engine/BricksBreakerEngine */ "./src/engine/BricksBreakerEngine.ts");
 var BoardContainer_1 = __webpack_require__(/*! ./BoardContainer */ "./src/scenes/board-scene/BoardContainer.ts");
-var Cell_1 = __webpack_require__(/*! ./Cell */ "./src/scenes/board-scene/Cell.ts");
 var GameVars_1 = __webpack_require__(/*! ../../GameVars */ "./src/GameVars.ts");
 var BoardScene = /** @class */ (function (_super) {
     __extends(BoardScene, _super);
@@ -938,9 +955,8 @@ var BoardScene = /** @class */ (function (_super) {
         var pointer = this.input.activePointer;
         if (pointer.isDown) {
             // pasamos a las coordenadas del board
-            var p1 = { x: 0, y: 5 * Cell_1.Cell.CELL_SIZE };
-            var p2 = { x: pointer.x - this.boardContainer.x, y: pointer.y - this.boardContainer.y };
-            this.boardContainer.drawRay(p1, p2);
+            var p = { x: pointer.x - this.boardContainer.x, y: pointer.y - this.boardContainer.y };
+            this.boardContainer.drawRay(p);
         }
     };
     return BoardScene;

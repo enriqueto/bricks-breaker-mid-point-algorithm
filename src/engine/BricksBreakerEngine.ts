@@ -38,6 +38,7 @@ export class BricksBreakerEngine {
             }
         }
 
+        // ver si alguna de las celdas de la trayectoria corresponde a un bloque
         let i: number;
         let j: number;
 

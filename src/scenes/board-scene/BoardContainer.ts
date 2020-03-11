@@ -56,40 +56,23 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         }
     }
 
-    public drawRay(p1: {x: number, y: number}, p2: {x: number, y: number}): void {
+    public drawRay(p: {x: number, y: number}): void {
 
-        let dx = p2.x - p1.x;
-        let dy = p2.y - p1.y;
-
-        const slope = dy / dx;
-
-        // se trata de buscar un punto lejano que este en el centro de una celda
-        let sign = dx > 0 ? 1 : -1;
-
-        p2.x = p1.x + sign * Cell.CELL_SIZE * 100;
-        p2.y = p1.y + sign * slope * Cell.CELL_SIZE * 100;
-
-        p2.y = Math.round(p2.y / Cell.CELL_SIZE) * Cell.CELL_SIZE;
-
-        // pasar a coordenadas de celda
         const start = {x: 4, y: 10};
-        
-        dx = (p2.x - p1.x) / Cell.CELL_SIZE;
-        dy = (p2.y - p1.y) / Cell.CELL_SIZE;
-
-        const end = {x: start.x + dx, y: start.y + dy};
+        const end = this.getGridEndPoint(p);
 
         const trajectory = BricksBreakerEngine.currentInstance.getTrajectory(start, end); 
 
         let vertices: {x: number, y: number} [];
+        let p0 = {x: 0, y: 5 * Cell.CELL_SIZE};
 
         if (trajectory !== null) {
 
-            const correctedSlope = dy / dx;
-            vertices = this.getTrajectoryVertices(p1, correctedSlope, trajectory);
+            const correctedSlope = (end.y - start.y) / (end.x - start.x);
+            vertices = this.getTrajectoryVertices(p0, correctedSlope, trajectory);
             
         } else {
-            vertices = [p1, p2];
+            vertices = [p0, p];
         }
 
         this.drawLineSegments(vertices);
@@ -124,6 +107,32 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         }
     }
 
+    private getGridEndPoint(p: {x: number, y: number}): {x: number, y: number} {
+        
+        let p0 = {x: 0, y: 5 * Cell.CELL_SIZE};
+
+        let dx = p.x - p0.x;
+        let dy = p.y - p0.y;
+
+        const slope = dy / dx;
+
+        // se trata de buscar un punto lejano que este en el centro de una celda
+        let sign = dx > 0 ? 1 : -1;
+
+        p.x = p0.x + sign * Cell.CELL_SIZE * 100;
+        p.y = p0.y + sign * slope * Cell.CELL_SIZE * 100;
+
+        p.y = Math.round(p.y / Cell.CELL_SIZE) * Cell.CELL_SIZE;
+
+        // pasar a coordenadas de celda
+        const start = {x: 4, y: 10};
+        
+        dx = (p.x - p0.x) / Cell.CELL_SIZE;
+        dy = (p.y - p0.y) / Cell.CELL_SIZE;
+
+        return {x: start.x + dx, y: start.y + dy};
+    }
+
     private drawLineSegments(vertices: {x: number, y: number}[]): void {
 
         if (vertices === null || vertices.length < 2) {
@@ -142,12 +151,12 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         this.rayGraphics.stroke();
     }
 
-    private getTrajectoryVertices(p1: {x: number, y: number}, slope: number, trajectory: {blockIndex: number, side: string} []): {x: number, y: number} [] {
+    private getTrajectoryVertices(p0: {x: number, y: number}, slope: number, trajectory: {blockIndex: number, side: string} []): {x: number, y: number} [] {
 
         // la ecuacion es y = slope * x + a
-        let a = p1.y - slope * p1.x;
+        let a = p0.y - slope * p0.x;
 
-        let vertices: {x: number, y: number} [] = [p1];
+        let vertices: {x: number, y: number} [] = [p0];
 
         const block = GameVars.blocks[trajectory[0].blockIndex];
         const side = trajectory[0].side;
