@@ -1,6 +1,6 @@
 import { GameConstants } from "../../GameConstants";
 import { Cell } from "./Cell";
-import { BoardManager } from "./BoardManager";
+import { BricksBreakerEngine } from "../../engine/BricksBreakerEngine";
 
 export class BoardContainer extends Phaser.GameObjects.Container {
 
@@ -71,7 +71,9 @@ export class BoardContainer extends Phaser.GameObjects.Container {
 
         const end = {x: start.x + dx, y: start.y + dy};
 
-        const cells = BoardManager.line(start, end); 
+        const bricksBreakerEngine = BricksBreakerEngine.currentInstance;
+
+        const cells = bricksBreakerEngine.line(start, end); 
         this.markCells(cells);   
     }
 
