@@ -4,7 +4,7 @@ export class BricksBreakerEngine {
 
     private height: number;
     private width: number;
-    private blocks:  {x: number, y: number, hits: number} [];
+    private blocks: {x: number, y: number, hits: number} [];
 
     constructor(widht: number, height: number, blocks: {x: number, y: number, hits: number} []) {
         
@@ -17,19 +17,46 @@ export class BricksBreakerEngine {
 
     public line(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
 
+        let cells: {x: number, y: number} [];
+
         if (p2.y > p1.y) {
             if (p2.x > p1.x) {
-                return this.lineNE(p1, p2);
+                cells = this.lineNE(p1, p2);
             } else {
-                return this.lineNW(p1, p2);
+                cells = this.lineNW(p1, p2);
             }
         } else {
             if (p2.x > p1.x) {
-                return this.lineSE(p1, p2);
+                cells = this.lineSE(p1, p2);
             } else {
-                return this.lineSW(p1, p2);
+                cells = this.lineSW(p1, p2);
             }
         }
+
+        // TODO: mirar si ha colisionado con algun bloque
+        let i: number;
+        let collision = false;
+
+        for (i = 0; i < cells.length; i++) {
+            const cell = cells[i];
+            for (let j = 0; j < this.blocks.length; j ++) {
+                const block = this.blocks[j];
+                if (cell.x === block.x && cell.y === block.y) {
+                    collision = true;
+                    break;
+                }
+            }
+
+            if (collision) {
+                break;
+            }
+        }
+
+        if (collision) {
+            cells.splice(i, cells.length - 1 - i);
+        }
+
+        return cells;
     }
 
     public lineNE(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
