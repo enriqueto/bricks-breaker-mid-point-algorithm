@@ -52,7 +52,7 @@ export class BoardScene extends Phaser.Scene {
             const p1 = {x: 0, y: 5 * Cell.CELL_SIZE};
             const p2 = {x: pointer.x - this.boardContainer.x, y: pointer.y - this.boardContainer.y};
 
-            this.boardContainer.drawLine(p1, p2);
+            this.boardContainer.drawRay(p1, p2);
         }
     }
 } 

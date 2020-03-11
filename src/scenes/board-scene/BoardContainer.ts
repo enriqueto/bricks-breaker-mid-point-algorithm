@@ -10,15 +10,15 @@ export class BoardContainer extends Phaser.GameObjects.Container {
     public static readonly BOARD_HEIGHT = 11;
 
     private cells: Cell [][];
-    private lineGraphics: Phaser.GameObjects.Graphics;
+    private rayGraphics: Phaser.GameObjects.Graphics;
 
     constructor(scene: Phaser.Scene) {
         
         super(scene);
 
-        this.lineGraphics = new Phaser.GameObjects.Graphics(this.scene);
+        this.rayGraphics = new Phaser.GameObjects.Graphics(this.scene);
         
-        this.add(this.lineGraphics);
+        this.add(this.rayGraphics);
 
         this.x = GameConstants.GAME_WIDTH / 2;
         this.y = GameConstants.GAME_HEIGHT / 2;
@@ -56,12 +56,12 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         }
     }
 
-    public drawLine(p1: {x: number, y: number}, p2: {x: number, y: number}): void {
+    public drawRay(p1: {x: number, y: number}, p2: {x: number, y: number}): void {
 
         let dx = p2.x - p1.x;
         let dy = p2.y - p1.y;
 
-        let slope = dy / dx;
+        const slope = dy / dx;
 
         // se trata de buscar un punto lejano que este en el centro de una celda
         let sign = dx > 0 ? 1 : -1;
@@ -71,12 +71,6 @@ export class BoardContainer extends Phaser.GameObjects.Container {
 
         p2.y = Math.round(p2.y / Cell.CELL_SIZE) * Cell.CELL_SIZE;
 
-        this.lineGraphics.clear();
-        this.lineGraphics.lineStyle(1, 0x00FF00);
-        this.lineGraphics.moveTo(p1.x, p1.y);
-        this.lineGraphics.lineTo(p2.x, p2.y);
-        this.lineGraphics.stroke();
-
         // pasar a coordenadas de celda
         const start = {x: 4, y: 10};
         
@@ -85,10 +79,20 @@ export class BoardContainer extends Phaser.GameObjects.Container {
 
         const end = {x: start.x + dx, y: start.y + dy};
 
-        const bricksBreakerEngine = BricksBreakerEngine.currentInstance;
+        const trajectory = BricksBreakerEngine.currentInstance.getTrajectory(start, end); 
 
-        const cells = bricksBreakerEngine.line(start, end); 
-        this.markCells(cells);   
+        let vertices: {x: number, y: number} [];
+
+        if (trajectory !== null) {
+
+            const correctedSlope = dy / dx;
+            vertices = this.getTrajectoryVertices(p1, correctedSlope, trajectory);
+            
+        } else {
+            vertices = [p1, p2];
+        }
+
+        this.drawLineSegments(vertices);
     }
 
     private markCell(p: {x: number, y: number}): void {
@@ -118,5 +122,62 @@ export class BoardContainer extends Phaser.GameObjects.Container {
                 this.markCell(cellPositions[i]);
             }
         }
+    }
+
+    private drawLineSegments(vertices: {x: number, y: number}[]): void {
+
+        if (vertices === null || vertices.length < 2) {
+            return;
+        }
+
+        this.rayGraphics.clear();
+        this.rayGraphics.lineStyle(1, 0x00FF00);
+
+        this.rayGraphics.moveTo(vertices[0].x, vertices[0].y);
+
+        for (let i = 1; i < vertices.length; i ++) {
+            this.rayGraphics.lineTo(vertices[i].x, vertices[i].y);
+        }
+
+        this.rayGraphics.stroke();
+    }
+
+    private getTrajectoryVertices(p1: {x: number, y: number}, slope: number, trajectory: {blockIndex: number, side: string} []): {x: number, y: number} [] {
+
+        // la ecuacion es y = slope * x + a
+        let a = p1.y - slope * p1.x;
+
+        let vertices: {x: number, y: number} [] = [p1];
+
+        const block = GameVars.blocks[trajectory[0].blockIndex];
+        const side = trajectory[0].side;
+
+        let vx: number;
+        let vy: number;
+
+        if (side === BricksBreakerEngine.UP) {
+
+            vy = -BoardContainer.BOARD_HEIGHT / 2 * Cell.CELL_SIZE + Cell.CELL_SIZE * block.y + 1;
+            vx = (vy - a) / slope;
+
+        } else if (side === BricksBreakerEngine.DOWN) {
+
+            vy = -BoardContainer.BOARD_HEIGHT / 2 * Cell.CELL_SIZE + Cell.CELL_SIZE * (block.y + 1);
+            vx = (vy - a) / slope;
+
+        } else if ( side === BricksBreakerEngine.LEFT) {
+
+            vx = -BoardContainer.BOARD_WIDTH / 2 * Cell.CELL_SIZE + Cell.CELL_SIZE * block.x;
+            vy = slope * vx + a;
+
+        } else {
+
+            vx = -BoardContainer.BOARD_WIDTH / 2 * Cell.CELL_SIZE + Cell.CELL_SIZE * (block.x + 1);
+            vy = slope * vx + a;
+        }
+
+        vertices.push({x: vx, y: vy});
+
+        return vertices;
     }
 }

@@ -1,5 +1,10 @@
 export class BricksBreakerEngine {
 
+    public static readonly RIGHT = "right";
+    public static readonly LEFT = "left";
+    public static readonly UP = "up";
+    public static readonly DOWN = "down";
+
     public static currentInstance: BricksBreakerEngine;
 
     private height: number;
@@ -15,8 +20,8 @@ export class BricksBreakerEngine {
         this.blocks = blocks;
     }
 
-    public line(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
-
+    public getTrajectory(p1: {x: number, y: number}, p2: {x: number, y: number}): {blockIndex: number, side: string} [] {
+        
         let cells: {x: number, y: number} [];
 
         if (p2.y > p1.y) {
@@ -33,14 +38,16 @@ export class BricksBreakerEngine {
             }
         }
 
-        // TODO: mirar si ha colisionado con algun bloque
         let i: number;
+        let j: number;
+
         let collision = false;
+        let block: {x: number, y: number, hits: number};
 
         for (i = 0; i < cells.length; i++) {
             const cell = cells[i];
-            for (let j = 0; j < this.blocks.length; j ++) {
-                const block = this.blocks[j];
+            for (j = 0; j < this.blocks.length; j ++) {
+                block = this.blocks[j];
                 if (cell.x === block.x && cell.y === block.y) {
                     collision = true;
                     break;
@@ -52,11 +59,32 @@ export class BricksBreakerEngine {
             }
         }
 
-        if (collision) {
-            cells.splice(i, cells.length - 1 - i);
-        }
+        let side: string;
 
-        return cells;
+        if (collision) {
+
+            cells.splice(i, cells.length - i);
+
+            const lastCell = cells[cells.length - 1];
+
+            const dx = block.x - lastCell.x;
+            const dy = block.y - lastCell.y;
+
+            if (dx === 1) {
+                side = BricksBreakerEngine.LEFT;
+            } else if (dx === -1) {
+                side = BricksBreakerEngine.RIGHT;
+            } else if (dy === 1) {
+                side = BricksBreakerEngine.UP;
+            } else {
+                side = BricksBreakerEngine.DOWN;
+            }
+
+            return [{blockIndex: j, side: side}];
+
+        } else {
+            return null;
+        }
     }
 
     public lineNE(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
