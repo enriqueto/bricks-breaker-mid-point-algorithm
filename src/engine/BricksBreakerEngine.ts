@@ -84,6 +84,8 @@ export class BricksBreakerEngine {
             return [{blockIndex: j, side: side}];
 
         } else {
+
+            // TODO: tratar el caso de que haya tocado borde del tablero
             return null;
         }
     }

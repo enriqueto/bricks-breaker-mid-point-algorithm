@@ -5,7 +5,6 @@ export class GameManager {
 
     public static init(): void {
 
-
         GameVars.blocks = [
             {x: 6, y: 4, hits: 10},
             {x: 2, y: 6, hits: 20},

@@ -4,7 +4,6 @@ import { HUD } from "./HUD";
 import { GUI } from "./GUI";
 import { BricksBreakerEngine } from "../../engine/BricksBreakerEngine";
 import { BoardContainer } from "./BoardContainer";
-import { Cell } from "./Cell";
 import { GameVars } from "../../GameVars";
 
 export class BoardScene extends Phaser.Scene {

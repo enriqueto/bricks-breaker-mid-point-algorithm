@@ -791,25 +791,14 @@ var BoardContainer = /** @class */ (function (_super) {
         return _this;
     }
     BoardContainer.prototype.drawRay = function (p) {
-        var p0 = { x: 0, y: 5 * Cell_1.Cell.CELL_SIZE };
-        var dx = p.x - p0.x;
-        var dy = p.y - p0.y;
-        var slope = dy / dx;
-        // se trata de buscar un punto lejano que este en el centro de una celda
-        var sign = dx > 0 ? 1 : -1;
-        p.x = p0.x + sign * Cell_1.Cell.CELL_SIZE * 100;
-        p.y = p0.y + sign * slope * Cell_1.Cell.CELL_SIZE * 100;
-        p.y = Math.round(p.y / Cell_1.Cell.CELL_SIZE) * Cell_1.Cell.CELL_SIZE;
-        // pasar a coordenadas de celda
         var start = { x: 4, y: 10 };
-        dx = (p.x - p0.x) / Cell_1.Cell.CELL_SIZE;
-        dy = (p.y - p0.y) / Cell_1.Cell.CELL_SIZE;
-        var end = { x: start.x + dx, y: start.y + dy };
+        var end = this.getGridEndPoint(p);
         var trajectory = BricksBreakerEngine_1.BricksBreakerEngine.currentInstance.getTrajectory(start, end);
         var vertices;
+        var p0 = { x: 0, y: 5 * Cell_1.Cell.CELL_SIZE };
         if (trajectory !== null) {
-            var correctedSlope = dy / dx;
-            vertices = this.getTrajectoryVertices(p, correctedSlope, trajectory);
+            var correctedSlope = (end.y - start.y) / (end.x - start.x);
+            vertices = this.getTrajectoryVertices(p0, correctedSlope, trajectory);
         }
         else {
             vertices = [p0, p];
@@ -837,21 +826,21 @@ var BoardContainer = /** @class */ (function (_super) {
             }
         }
     };
-    BoardContainer.prototype.getGridEndPoint = function (p1, p2) {
-        var dx = p2.x - p1.x;
-        var dy = p2.y - p1.y;
+    BoardContainer.prototype.getGridEndPoint = function (p) {
+        var p0 = { x: 0, y: 5 * Cell_1.Cell.CELL_SIZE };
+        var dx = p.x - p0.x;
+        var dy = p.y - p0.y;
         var slope = dy / dx;
         // se trata de buscar un punto lejano que este en el centro de una celda
         var sign = dx > 0 ? 1 : -1;
-        p2.x = p1.x + sign * Cell_1.Cell.CELL_SIZE * 100;
-        p2.y = p1.y + sign * slope * Cell_1.Cell.CELL_SIZE * 100;
-        p2.y = Math.round(p2.y / Cell_1.Cell.CELL_SIZE) * Cell_1.Cell.CELL_SIZE;
+        p.x = p0.x + sign * Cell_1.Cell.CELL_SIZE * 100;
+        p.y = p0.y + sign * slope * Cell_1.Cell.CELL_SIZE * 100;
+        p.y = Math.round(p.y / Cell_1.Cell.CELL_SIZE) * Cell_1.Cell.CELL_SIZE;
         // pasar a coordenadas de celda
         var start = { x: 4, y: 10 };
-        dx = (p2.x - p1.x) / Cell_1.Cell.CELL_SIZE;
-        dy = (p2.y - p1.y) / Cell_1.Cell.CELL_SIZE;
-        var end = { x: start.x + dx, y: start.y + dy };
-        return { start: start, end: end };
+        dx = (p.x - p0.x) / Cell_1.Cell.CELL_SIZE;
+        dy = (p.y - p0.y) / Cell_1.Cell.CELL_SIZE;
+        return { x: start.x + dx, y: start.y + dy };
     };
     BoardContainer.prototype.drawLineSegments = function (vertices) {
         if (vertices === null || vertices.length < 2) {
@@ -865,10 +854,10 @@ var BoardContainer = /** @class */ (function (_super) {
         }
         this.rayGraphics.stroke();
     };
-    BoardContainer.prototype.getTrajectoryVertices = function (p1, slope, trajectory) {
+    BoardContainer.prototype.getTrajectoryVertices = function (p0, slope, trajectory) {
         // la ecuacion es y = slope * x + a
-        var a = p1.y - slope * p1.x;
-        var vertices = [p1];
+        var a = p0.y - slope * p0.x;
+        var vertices = [p0];
         var block = GameVars_1.GameVars.blocks[trajectory[0].blockIndex];
         var side = trajectory[0].side;
         var vx;
