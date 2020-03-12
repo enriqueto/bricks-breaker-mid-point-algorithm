@@ -118,6 +118,11 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         let vx: number;
         let vy: number;
 
+
+        // TODO: ARREGLAR ESTO
+        let vrx = 0;
+        let vry = 0;
+
         if (side === BricksBreakerEngine.UP) {
 
             vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * block.y + 1;
@@ -128,18 +133,45 @@ export class BoardContainer extends Phaser.GameObjects.Container {
             vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (block.y + 1);
             vx = (vy - a) / slope;
 
+            if (slope > 0) {
+                vrx = vx - 10 * BoardContainer.CELL_SIZE;
+            } else {
+                vrx = vx + 10 * BoardContainer.CELL_SIZE;
+            }
+
+            slope *= -1;
+
+            vry = vy + slope * vrx;
+
+
         } else if ( side === BricksBreakerEngine.LEFT) {
 
             vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * block.x;
             vy = slope * vx + a;
 
+            if (slope > 0) {
+                vrx = vx + 10 * BoardContainer.CELL_SIZE;
+            } else {
+                vrx = vx - 10 * BoardContainer.CELL_SIZE;
+            }
+
+            vry = vy - slope * vrx;
+
         } else {
 
+            // RIGHT
             vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (block.x + 1);
             vy = slope * vx + a;
+
+            slope *= -1;
+
+            vrx = vx + 10 * BoardContainer.CELL_SIZE;
+            vry = vy + slope * vrx;
         }
 
         vertices.push({x: vx, y: vy});
+
+        vertices.push({x: vrx, y: vry});
 
         // la linea reflejada
 
