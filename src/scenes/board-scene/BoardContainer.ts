@@ -36,7 +36,7 @@ export class BoardContainer extends Phaser.GameObjects.Container {
             block.x = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * x;
             block.y = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * y;
             this.add(block);
-        }
+        } 
     }
 
     public drawRay(p: {x: number, y: number}): void {
@@ -105,19 +105,19 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         this.rayGraphics.stroke();
     }
 
-    private getTrajectoryVertices(p0: {x: number, y: number}, slope: number, trajectory: {blockIndex: number, side: string} []): {x: number, y: number} [] {
+    private getTrajectoryVertices(p0: {x: number, y: number}, slope: number, trajectory: {p: {x: number, y: number}, side: string} []): {x: number, y: number} [] {
 
         // la ecuacion es y = slope * x + a
         let a = p0.y - slope * p0.x;
 
         let vertices: {x: number, y: number} [] = [p0];
 
-        const block = GameVars.blocks[trajectory[0].blockIndex];
+        // const block = GameVars.blocks[trajectory[0].blockIndex];
+        const blockPos = trajectory[0].p;
         const side = trajectory[0].side;
 
         let vx: number;
         let vy: number;
-
 
         // TODO: ARREGLAR ESTO
         let vrx = 0;
@@ -125,12 +125,12 @@ export class BoardContainer extends Phaser.GameObjects.Container {
 
         if (side === BricksBreakerEngine.UP) {
 
-            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * block.y + 1;
+            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * blockPos.y + 1;
             vx = (vy - a) / slope;
 
         } else if (side === BricksBreakerEngine.DOWN) {
 
-            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (block.y + 1);
+            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (blockPos.y + 1);
             vx = (vy - a) / slope;
 
             if (slope > 0) {
@@ -146,7 +146,7 @@ export class BoardContainer extends Phaser.GameObjects.Container {
 
         } else if ( side === BricksBreakerEngine.LEFT) {
 
-            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * block.x;
+            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * blockPos.x;
             vy = slope * vx + a;
 
             if (slope > 0) {
@@ -160,7 +160,7 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         } else {
 
             // RIGHT
-            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (block.x + 1);
+            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (blockPos.x + 1);
             vy = slope * vx + a;
 
             slope *= -1;

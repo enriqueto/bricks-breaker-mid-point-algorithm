@@ -20,7 +20,7 @@ export class BricksBreakerEngine {
         this.blocks = blocks;
     }
 
-    public getTrajectory(p1: {x: number, y: number}, p2: {x: number, y: number}): {blockIndex: number, side: string} [] {
+    public getTrajectory(p1: {x: number, y: number}, p2: {x: number, y: number}): {p: {x: number, y: number}, side: string} [] {
         
         let cells: {x: number, y: number} [];
 
@@ -40,36 +40,34 @@ export class BricksBreakerEngine {
 
         // ver si alguna de las celdas de la trayectoria corresponde a un bloque
         let i: number;
-        let j: number;
 
-        let collision = false;
-        let block: {x: number, y: number, hits: number};
+        let blockHit: {x: number, y: number, hits?: number} = null;
 
         for (i = 0; i < cells.length; i++) {
             const cell = cells[i];
-            for (j = 0; j < this.blocks.length; j ++) {
-                block = this.blocks[j];
-                if (cell.x === block.x && cell.y === block.y) {
-                    collision = true;
+            for (let j = 0; j < this.blocks.length; j ++) {
+                
+                if (cell.x === this.blocks[j].x && cell.y === this.blocks[j].y) {
+                    blockHit = this.blocks[j];
                     break;
                 }
             }
 
-            if (collision) {
+            if (blockHit) {
                 break;
             }
         }
 
+        // TODO: ESTO SE DEBERIA UNIFICAR
+
         let side: string;
 
-        if (collision) {
+        if (blockHit) {
 
-            cells.splice(i, cells.length - i);
+            const lastCell = cells[i - 1];
 
-            const lastCell = cells[cells.length - 1];
-
-            const dx = block.x - lastCell.x;
-            const dy = block.y - lastCell.y;
+            const dx = blockHit.x - lastCell.x;
+            const dy = blockHit.y - lastCell.y;
 
             if (dx === 1) {
                 side = BricksBreakerEngine.LEFT;
@@ -81,13 +79,23 @@ export class BricksBreakerEngine {
                 side = BricksBreakerEngine.DOWN;
             }
 
-            return [{blockIndex: j, side: side}];
-
         } else {
 
-            // TODO: tratar el caso de que haya tocado borde del tablero
-            return null;
+            blockHit = cells[cells.length - 1];
+
+            // tomar la ultima celda
+            if (blockHit.y === this.height) {
+                side = BricksBreakerEngine.UP;
+            } else if (blockHit.x === -1) {
+                side = BricksBreakerEngine.RIGHT;
+            } else if (blockHit.y === -1) {
+                side = BricksBreakerEngine.DOWN;
+            } else if (blockHit.x = this.width) {
+                side = BricksBreakerEngine.LEFT;
+            } 
         }
+
+        return [{p: {x: blockHit.x, y: blockHit.y}, side: side}];
     }
 
     public lineNE(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
@@ -184,6 +192,17 @@ export class BricksBreakerEngine {
             }
             ret.push({x: x, y: y});
         }
+
+        // TODO: PONER ESTO EN EL RESTO DE LAS FUNCIONES
+        // while (x !== p2.x) {
+        //     x--;
+        //     ret.push({x: x, y: y});
+        // }
+    
+        // while (y !== p2.y) {
+        //     y--;
+        //     ret.push({x: x, y: y});
+        // }
 
         return ret;
     }
