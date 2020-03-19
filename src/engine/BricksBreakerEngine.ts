@@ -58,41 +58,27 @@ export class BricksBreakerEngine {
             }
         }
 
-        // TODO: ESTO SE DEBERIA UNIFICAR
-
         let side: string;
+        let lastCell: {x: number, y: number};
 
         if (blockHit) {
-
-            const lastCell = cells[i - 1];
-
-            const dx = blockHit.x - lastCell.x;
-            const dy = blockHit.y - lastCell.y;
-
-            if (dx === 1) {
-                side = BricksBreakerEngine.LEFT;
-            } else if (dx === -1) {
-                side = BricksBreakerEngine.RIGHT;
-            } else if (dy === 1) {
-                side = BricksBreakerEngine.UP;
-            } else {
-                side = BricksBreakerEngine.DOWN;
-            }
-
+            lastCell = cells[i - 1];
         } else {
-
+            lastCell = cells[cells.length - 2];
             blockHit = cells[cells.length - 1];
+        }
 
-            // tomar la ultima celda
-            if (blockHit.y === this.height) {
-                side = BricksBreakerEngine.UP;
-            } else if (blockHit.x === -1) {
-                side = BricksBreakerEngine.RIGHT;
-            } else if (blockHit.y === -1) {
-                side = BricksBreakerEngine.DOWN;
-            } else if (blockHit.x = this.width) {
-                side = BricksBreakerEngine.LEFT;
-            } 
+        const dx = blockHit.x - lastCell.x;
+        const dy = blockHit.y - lastCell.y;
+
+        if (dx === 1) {
+            side = BricksBreakerEngine.LEFT;
+        } else if (dx === -1) {
+            side = BricksBreakerEngine.RIGHT;
+        } else if (dy === 1) {
+            side = BricksBreakerEngine.UP;
+        } else {
+            side = BricksBreakerEngine.DOWN;
         }
 
         return [{p: {x: blockHit.x, y: blockHit.y}, side: side}];

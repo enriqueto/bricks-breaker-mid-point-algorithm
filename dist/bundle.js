@@ -376,7 +376,6 @@ var BricksBreakerEngine = /** @class */ (function () {
         this.width = widht;
         this.height = height;
         this.blocks = blocks;
-        console.log("EN LUGAR DE RETORNAR EL INDICE DEL BLOQUE QUE SE RETORNE LA POSICION DEL BLOQUE DONDE SE HA REFLEJADO ASI SE PUEDEN MODELAR TAMBIEN LAS PAREDES PASANDO LA ULTIMNA CELDA DEL ARRAY CELLS");
     }
     BricksBreakerEngine.prototype.getTrajectory = function (p1, p2) {
         var cells;
@@ -398,60 +397,43 @@ var BricksBreakerEngine = /** @class */ (function () {
         }
         // ver si alguna de las celdas de la trayectoria corresponde a un bloque
         var i;
-        var j;
-        var collision = false;
-        var block;
+        var blockHit = null;
         for (i = 0; i < cells.length; i++) {
             var cell = cells[i];
-            for (j = 0; j < this.blocks.length; j++) {
-                block = this.blocks[j];
-                if (cell.x === block.x && cell.y === block.y) {
-                    collision = true;
+            for (var j = 0; j < this.blocks.length; j++) {
+                if (cell.x === this.blocks[j].x && cell.y === this.blocks[j].y) {
+                    blockHit = this.blocks[j];
                     break;
                 }
             }
-            if (collision) {
+            if (blockHit) {
                 break;
             }
         }
         var side;
-        if (collision) {
-            cells.splice(i, cells.length - i);
-            var lastCell = cells[cells.length - 1];
-            var dx = block.x - lastCell.x;
-            var dy = block.y - lastCell.y;
-            if (dx === 1) {
-                side = BricksBreakerEngine.LEFT;
-            }
-            else if (dx === -1) {
-                side = BricksBreakerEngine.RIGHT;
-            }
-            else if (dy === 1) {
-                side = BricksBreakerEngine.UP;
-            }
-            else {
-                side = BricksBreakerEngine.DOWN;
-            }
-            return [{ blockIndex: j, side: side }];
+        var lastCell;
+        if (blockHit) {
+            lastCell = cells[i - 1];
         }
         else {
-            var lastCell = cells[cells.length - 1];
-            // tomar la ultima celda
-            if (lastCell.y === this.height) {
-                side = BricksBreakerEngine.DOWN;
-            }
-            else if (lastCell.x === -1) {
-                side = BricksBreakerEngine.LEFT;
-            }
-            else if (lastCell.y === -1) {
-                side = BricksBreakerEngine.UP;
-            }
-            else if (lastCell.x = this.width) {
-                side = BricksBreakerEngine.RIGHT;
-            }
-            return null;
-            return [{ blockIndex: -1, side: side }];
+            lastCell = cells[cells.length - 2];
+            blockHit = cells[cells.length - 1];
         }
+        var dx = blockHit.x - lastCell.x;
+        var dy = blockHit.y - lastCell.y;
+        if (dx === 1) {
+            side = BricksBreakerEngine.LEFT;
+        }
+        else if (dx === -1) {
+            side = BricksBreakerEngine.RIGHT;
+        }
+        else if (dy === 1) {
+            side = BricksBreakerEngine.UP;
+        }
+        else {
+            side = BricksBreakerEngine.DOWN;
+        }
+        return [{ p: { x: blockHit.x, y: blockHit.y }, side: side }];
     };
     BricksBreakerEngine.prototype.lineNE = function (p1, p2) {
         var ret = [p1];
@@ -900,7 +882,8 @@ var BoardContainer = /** @class */ (function (_super) {
         // la ecuacion es y = slope * x + a
         var a = p0.y - slope * p0.x;
         var vertices = [p0];
-        var block = GameVars_1.GameVars.blocks[trajectory[0].blockIndex];
+        // const block = GameVars.blocks[trajectory[0].blockIndex];
+        var blockPos = trajectory[0].p;
         var side = trajectory[0].side;
         var vx;
         var vy;
@@ -908,11 +891,11 @@ var BoardContainer = /** @class */ (function (_super) {
         var vrx = 0;
         var vry = 0;
         if (side === BricksBreakerEngine_1.BricksBreakerEngine.UP) {
-            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * block.y + 1;
+            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * blockPos.y + 1;
             vx = (vy - a) / slope;
         }
         else if (side === BricksBreakerEngine_1.BricksBreakerEngine.DOWN) {
-            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (block.y + 1);
+            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (blockPos.y + 1);
             vx = (vy - a) / slope;
             if (slope > 0) {
                 vrx = vx - 10 * BoardContainer.CELL_SIZE;
@@ -924,7 +907,7 @@ var BoardContainer = /** @class */ (function (_super) {
             vry = vy + slope * vrx;
         }
         else if (side === BricksBreakerEngine_1.BricksBreakerEngine.LEFT) {
-            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * block.x;
+            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * blockPos.x;
             vy = slope * vx + a;
             if (slope > 0) {
                 vrx = vx + 10 * BoardContainer.CELL_SIZE;
@@ -936,7 +919,7 @@ var BoardContainer = /** @class */ (function (_super) {
         }
         else {
             // RIGHT
-            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (block.x + 1);
+            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (blockPos.x + 1);
             vy = slope * vx + a;
             slope *= -1;
             vrx = vx + 10 * BoardContainer.CELL_SIZE;
@@ -995,6 +978,7 @@ var BoardScene = /** @class */ (function (_super) {
         return _this;
     }
     BoardScene.prototype.create = function () {
+        console.log("LIMITAR EL ANGULO DE MANERA CORRECTA");
         GameManager_1.GameManager.setCurrentScene(this);
         var bricksBreakerEngine = new BricksBreakerEngine_1.BricksBreakerEngine(BoardContainer_1.BoardContainer.BOARD_WIDTH, BoardContainer_1.BoardContainer.BOARD_HEIGHT, GameVars_1.GameVars.blocks);
         var background = this.add.graphics();
@@ -1012,7 +996,9 @@ var BoardScene = /** @class */ (function (_super) {
         if (pointer.isDown) {
             // pasamos a las coordenadas del board
             var p = { x: pointer.x - this.boardContainer.x, y: pointer.y - this.boardContainer.y };
-            this.boardContainer.drawRay(p);
+            if (p.y < BoardContainer_1.BoardContainer.CELL_SIZE * 5 * .99) {
+                this.boardContainer.drawRay(p);
+            }
         }
     };
     return BoardScene;

@@ -23,6 +23,9 @@ export class BoardScene extends Phaser.Scene {
 
     public create(): void {
 
+
+        console.log("LIMITAR EL ANGULO DE MANERA CORRECTA");
+
         GameManager.setCurrentScene(this);
 
         const bricksBreakerEngine = new BricksBreakerEngine(BoardContainer.BOARD_WIDTH, BoardContainer.BOARD_HEIGHT, GameVars.blocks);
@@ -49,8 +52,10 @@ export class BoardScene extends Phaser.Scene {
 
             // pasamos a las coordenadas del board
             const p = {x: pointer.x - this.boardContainer.x, y: pointer.y - this.boardContainer.y};
-
-            this.boardContainer.drawRay(p);
+ 
+            if (p.y < BoardContainer.CELL_SIZE * 5 * .995) {
+                this.boardContainer.drawRay(p);
+            }           
         }
     }
 } 
