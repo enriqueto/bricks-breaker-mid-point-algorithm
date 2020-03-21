@@ -46,18 +46,11 @@ export class BoardContainer extends Phaser.GameObjects.Container {
 
         const trajectory = BricksBreakerEngine.currentInstance.getTrajectory(start, end); 
 
-        let vertices: {x: number, y: number} [];
         let p0 = {x: 0, y: 5 * BoardContainer.CELL_SIZE};
 
-        if (trajectory !== null) {
-
-            const correctedSlope = (end.y - start.y) / (end.x - start.x);
-            vertices = this.getTrajectoryVertices(p0, correctedSlope, trajectory);
-            
-        } else {
-            vertices = [p0, p];
-        }
-
+        const correctedSlope = (end.y - start.y) / (end.x - start.x);
+        const vertices: {x: number, y: number} [] = this.getTrajectoryVertices(p0, correctedSlope, trajectory);
+       
         this.drawLineSegments(vertices);
     }
 

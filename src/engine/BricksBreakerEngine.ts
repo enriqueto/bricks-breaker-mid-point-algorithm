@@ -22,6 +22,66 @@ export class BricksBreakerEngine {
 
     public getTrajectory(p1: {x: number, y: number}, p2: {x: number, y: number}): {p: {x: number, y: number}, side: string} [] {
         
+        const trajectoryData: {p: {x: number, y: number}, side: string} [] = [];
+
+        let t = this.getRaySegment(p1, p2);
+        trajectoryData.push(t);
+
+        // TODO: hacer una reflexión
+        const reflectedSegment = this.getReflectedRay(p1, p2, t);
+
+        if (reflectedSegment.rp1.x) {
+
+            t = this.getRaySegment(reflectedSegment.rp1, reflectedSegment.rp2);
+
+            console.log("x:", t.p.x, "y:", t.p.y);
+        }
+
+        return trajectoryData;
+    }
+
+    private getReflectedRay(p1: {x: number, y: number}, p2: {x: number, y: number}, t: {p: {x: number, y: number}, side: string}): {rp1: {x: number, y: number}, rp2: {x: number, y: number}} {
+        
+        let rp1x: number;
+        let rp1y: number;
+        let rp2x: number;
+        let rp2y: number;
+
+        switch (t.side) {
+
+            case BricksBreakerEngine.LEFT:
+
+                let d1x = t.p.x - p1.x;
+                rp1x = t.p.x + d1x - 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                rp1y = p1.y;
+
+                let d2x = p2.x - t.p.x;
+                rp2x = t.p.x - d2x + 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                rp2y = p2.y;
+
+                break;
+
+            case BricksBreakerEngine.RIGHT:
+                
+                break;
+
+            case BricksBreakerEngine.UP:
+                
+                break;
+    
+            case BricksBreakerEngine.DOWN:
+                    
+                break;
+        
+            default:
+                break;
+        }
+
+        return {rp1: {x: rp1x, y: rp1y}, rp2: {x: rp2x, y: rp2y}};
+    }
+
+    private getRaySegment(p1: {x: number, y: number}, p2: {x: number, y: number}): {p: {x: number, y: number}, side: string} {
+
         let cells: {x: number, y: number} [];
 
         if (p2.y > p1.y) {
@@ -81,10 +141,10 @@ export class BricksBreakerEngine {
             side = BricksBreakerEngine.DOWN;
         }
 
-        return [{p: {x: blockHit.x, y: blockHit.y}, side: side}];
+        return {p: {x: blockHit.x, y: blockHit.y}, side: side};
     }
 
-    public lineNE(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
+    private lineNE(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
 
         const ret: {x: number, y: number} [] = [p1];
         let dx = p2.x - p1.x;
@@ -94,7 +154,7 @@ export class BricksBreakerEngine {
         dy *= 2;
         let x = p1.x;
         let y = p1.y;
-        while ( x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
+        while (x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
             if (e <= 0) {
                 y ++;
                 e += dx;
@@ -108,7 +168,7 @@ export class BricksBreakerEngine {
         return ret;
     }
 
-    public lineNW(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
+    private lineNW(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
 
         const ret: {x: number, y: number} [] = [p1];
         let dx = p2.x - p1.x;
@@ -132,7 +192,7 @@ export class BricksBreakerEngine {
         return ret;
     }
 
-    public lineSE(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
+    private lineSE(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
 
         const ret: {x: number, y: number} [] = [p1];
         let dx = p2.x - p1.x;
@@ -158,7 +218,7 @@ export class BricksBreakerEngine {
         return ret;
     }
 
-    public lineSW(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
+    private lineSW(p1: {x: number, y: number}, p2: {x: number, y: number}): {x: number, y: number} [] {
 
         const ret: {x: number, y: number} [] = [p1];
         let dx = p2.x - p1.x;

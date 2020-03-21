@@ -23,9 +23,6 @@ export class BoardScene extends Phaser.Scene {
 
     public create(): void {
 
-
-        console.log("LIMITAR EL ANGULO DE MANERA CORRECTA");
-
         GameManager.setCurrentScene(this);
 
         const bricksBreakerEngine = new BricksBreakerEngine(BoardContainer.BOARD_WIDTH, BoardContainer.BOARD_HEIGHT, GameVars.blocks);
@@ -42,6 +39,8 @@ export class BoardScene extends Phaser.Scene {
 
         this.gui = new GUI(this);
         this.add.existing(this.gui);
+
+        console.log("EN EL METODO getRaySegment(...) IGNORAR LAS CELDAS DE LA PROLONGACION DE LA LINEA HASTA QUE TOQUE EL BLOQUE QUE YA FUE TOCADO");
     }
 
     public update(): void {
