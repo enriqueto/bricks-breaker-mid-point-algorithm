@@ -154,7 +154,7 @@ var GameConstants = /** @class */ (function () {
     function GameConstants() {
     }
     GameConstants.VERSION = "0.0";
-    GameConstants.DEVELOPMENT = false;
+    GameConstants.DEVELOPMENT = true;
     GameConstants.VERBOSE = false;
     GameConstants.GAME_WIDTH = 768;
     GameConstants.GAME_HEIGHT = 1024;
@@ -378,6 +378,43 @@ var BricksBreakerEngine = /** @class */ (function () {
         this.blocks = blocks;
     }
     BricksBreakerEngine.prototype.getTrajectory = function (p1, p2) {
+        var trajectoryData = [];
+        var t = this.getRaySegment(p1, p2);
+        trajectoryData.push(t);
+        // TODO: hacer una reflexión
+        var reflectedSegment = this.getReflectedRay(p1, p2, t);
+        if (reflectedSegment.rp1.x) {
+            t = this.getRaySegment(reflectedSegment.rp1, reflectedSegment.rp2);
+            console.log("x:", t.p.x, "y:", t.p.y);
+        }
+        return trajectoryData;
+    };
+    BricksBreakerEngine.prototype.getReflectedRay = function (p1, p2, t) {
+        var rp1x;
+        var rp1y;
+        var rp2x;
+        var rp2y;
+        switch (t.side) {
+            case BricksBreakerEngine.LEFT:
+                var d1x = t.p.x - p1.x;
+                rp1x = t.p.x + d1x - 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                rp1y = p1.y;
+                var d2x = p2.x - t.p.x;
+                rp2x = t.p.x - d2x + 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                rp2y = p2.y;
+                break;
+            case BricksBreakerEngine.RIGHT:
+                break;
+            case BricksBreakerEngine.UP:
+                break;
+            case BricksBreakerEngine.DOWN:
+                break;
+            default:
+                break;
+        }
+        return { rp1: { x: rp1x, y: rp1y }, rp2: { x: rp2x, y: rp2y } };
+    };
+    BricksBreakerEngine.prototype.getRaySegment = function (p1, p2) {
         var cells;
         if (p2.y > p1.y) {
             if (p2.x > p1.x) {
@@ -433,7 +470,7 @@ var BricksBreakerEngine = /** @class */ (function () {
         else {
             side = BricksBreakerEngine.DOWN;
         }
-        return [{ p: { x: blockHit.x, y: blockHit.y }, side: side }];
+        return { p: { x: blockHit.x, y: blockHit.y }, side: side };
     };
     BricksBreakerEngine.prototype.lineNE = function (p1, p2) {
         var ret = [p1];
@@ -839,15 +876,9 @@ var BoardContainer = /** @class */ (function (_super) {
         var start = { x: 4, y: 10 };
         var end = this.getGridEndPoint(p);
         var trajectory = BricksBreakerEngine_1.BricksBreakerEngine.currentInstance.getTrajectory(start, end);
-        var vertices;
         var p0 = { x: 0, y: 5 * BoardContainer.CELL_SIZE };
-        if (trajectory !== null) {
-            var correctedSlope = (end.y - start.y) / (end.x - start.x);
-            vertices = this.getTrajectoryVertices(p0, correctedSlope, trajectory);
-        }
-        else {
-            vertices = [p0, p];
-        }
+        var correctedSlope = (end.y - start.y) / (end.x - start.x);
+        var vertices = this.getTrajectoryVertices(p0, correctedSlope, trajectory);
         this.drawLineSegments(vertices);
     };
     BoardContainer.prototype.getGridEndPoint = function (p) {
@@ -978,7 +1009,6 @@ var BoardScene = /** @class */ (function (_super) {
         return _this;
     }
     BoardScene.prototype.create = function () {
-        console.log("LIMITAR EL ANGULO DE MANERA CORRECTA");
         GameManager_1.GameManager.setCurrentScene(this);
         var bricksBreakerEngine = new BricksBreakerEngine_1.BricksBreakerEngine(BoardContainer_1.BoardContainer.BOARD_WIDTH, BoardContainer_1.BoardContainer.BOARD_HEIGHT, GameVars_1.GameVars.blocks);
         var background = this.add.graphics();
@@ -990,13 +1020,14 @@ var BoardScene = /** @class */ (function (_super) {
         this.add.existing(this.hud);
         this.gui = new GUI_1.GUI(this);
         this.add.existing(this.gui);
+        console.log("EN EL METODO getRaySegment(...) IGNORAR LAS CELDAS DE LA PROLONGACION DE LA LINEA HASTA QUE TOQUE EL BLOQUE QUE YA FUE TOCADO");
     };
     BoardScene.prototype.update = function () {
         var pointer = this.input.activePointer;
         if (pointer.isDown) {
             // pasamos a las coordenadas del board
             var p = { x: pointer.x - this.boardContainer.x, y: pointer.y - this.boardContainer.y };
-            if (p.y < BoardContainer_1.BoardContainer.CELL_SIZE * 5 * .99) {
+            if (p.y < BoardContainer_1.BoardContainer.CELL_SIZE * 5 * .995) {
                 this.boardContainer.drawRay(p);
             }
         }

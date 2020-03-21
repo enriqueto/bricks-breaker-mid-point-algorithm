@@ -44,7 +44,7 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         const start = {x: 4, y: 10};
         const end = this.getGridEndPoint(p);
 
-        const trajectory = BricksBreakerEngine.currentInstance.getTrajectory(start, end); 
+        const trajectory = BricksBreakerEngine.currentInstance.getTrajectoryData(start, end); 
 
         let p0 = {x: 0, y: 5 * BoardContainer.CELL_SIZE};
 
@@ -105,8 +105,7 @@ export class BoardContainer extends Phaser.GameObjects.Container {
 
         let vertices: {x: number, y: number} [] = [p0];
 
-        // const block = GameVars.blocks[trajectory[0].blockIndex];
-        const blockPos = trajectory[0].p;
+        const hitBlock = trajectory[0].p;
         const side = trajectory[0].side;
 
         let vx: number;
@@ -118,12 +117,12 @@ export class BoardContainer extends Phaser.GameObjects.Container {
 
         if (side === BricksBreakerEngine.UP) {
 
-            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * blockPos.y + 1;
+            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * hitBlock.y + 1;
             vx = (vy - a) / slope;
 
         } else if (side === BricksBreakerEngine.DOWN) {
 
-            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (blockPos.y + 1);
+            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (hitBlock.y + 1);
             vx = (vy - a) / slope;
 
             if (slope > 0) {
@@ -134,32 +133,32 @@ export class BoardContainer extends Phaser.GameObjects.Container {
 
             slope *= -1;
 
-            vry = vy + slope * vrx;
-
+            vry = vy + slope * (vrx - vx);
 
         } else if ( side === BricksBreakerEngine.LEFT) {
 
-            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * blockPos.x;
+            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * hitBlock.x;
             vy = slope * vx + a;
 
-            if (slope > 0) {
-                vrx = vx + 10 * BoardContainer.CELL_SIZE;
-            } else {
-                vrx = vx - 10 * BoardContainer.CELL_SIZE;
-            }
+            vrx = vx - 10 * BoardContainer.CELL_SIZE;
+            
+            slope *= -1;
 
-            vry = vy - slope * vrx;
+            vry = vy + slope * (vrx - vx);
 
         } else {
 
             // RIGHT
-            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (blockPos.x + 1);
+            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (hitBlock.x + 1);
             vy = slope * vx + a;
+
+           
+
+            vrx = vx + 10 * BoardContainer.CELL_SIZE;
 
             slope *= -1;
 
-            vrx = vx + 10 * BoardContainer.CELL_SIZE;
-            vry = vy + slope * vrx;
+            vry = vy + slope * (vrx - vx);
         }
 
         vertices.push({x: vx, y: vy});

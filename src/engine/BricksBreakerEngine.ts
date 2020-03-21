@@ -20,43 +20,43 @@ export class BricksBreakerEngine {
         this.blocks = blocks;
     }
 
-    public getTrajectory(p1: {x: number, y: number}, p2: {x: number, y: number}): {p: {x: number, y: number}, side: string} [] {
+    public getTrajectoryData(p1: {x: number, y: number}, p2: {x: number, y: number}): {p: {x: number, y: number}, side: string} [] {
         
-        const trajectoryData: {p: {x: number, y: number}, side: string} [] = [];
+        const hitBlockData: {p: {x: number, y: number}, side: string} [] = [];
 
-        let t = this.getRaySegment(p1, p2);
-        trajectoryData.push(t);
+        let h = this.getHitBlock(p1, p2);
+        hitBlockData.push(h);
 
         // TODO: hacer una reflexión
-        const reflectedSegment = this.getReflectedRay(p1, p2, t);
+        // const reflectedSegment = this.getReflectedRay(p1, p2, h);
 
-        if (reflectedSegment.rp1.x) {
+        // if (reflectedSegment.rp1.x) {
 
-            t = this.getRaySegment(reflectedSegment.rp1, reflectedSegment.rp2);
+        //     h = this.getHitBlock(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
 
-            console.log("x:", t.p.x, "y:", t.p.y);
-        }
+        //     console.log("x:", h.p.x, "y:", h.p.y);
+        // }
 
-        return trajectoryData;
+        return hitBlockData;
     }
 
-    private getReflectedRay(p1: {x: number, y: number}, p2: {x: number, y: number}, t: {p: {x: number, y: number}, side: string}): {rp1: {x: number, y: number}, rp2: {x: number, y: number}} {
+    private getReflectedRay(p1: {x: number, y: number}, p2: {x: number, y: number}, h: {p: {x: number, y: number}, side: string}): {rp1: {x: number, y: number}, rp2: {x: number, y: number}} {
         
         let rp1x: number;
         let rp1y: number;
         let rp2x: number;
         let rp2y: number;
 
-        switch (t.side) {
+        switch (h.side) {
 
             case BricksBreakerEngine.LEFT:
 
-                let d1x = t.p.x - p1.x;
-                rp1x = t.p.x + d1x - 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                let d1x = h.p.x - p1.x;
+                rp1x = h.p.x + d1x - 1; // TODO: REFACTORIZAR ESTA EXPRESION
                 rp1y = p1.y;
 
-                let d2x = p2.x - t.p.x;
-                rp2x = t.p.x - d2x + 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                let d2x = p2.x - h.p.x;
+                rp2x = h.p.x - d2x + 1; // TODO: REFACTORIZAR ESTA EXPRESION
                 rp2y = p2.y;
 
                 break;
@@ -80,7 +80,7 @@ export class BricksBreakerEngine {
         return {rp1: {x: rp1x, y: rp1y}, rp2: {x: rp2x, y: rp2y}};
     }
 
-    private getRaySegment(p1: {x: number, y: number}, p2: {x: number, y: number}): {p: {x: number, y: number}, side: string} {
+    private getHitBlock(p1: {x: number, y: number}, p2: {x: number, y: number}, lastBlockHit?: {x: number, y: number}): {p: {x: number, y: number}, side: string} {
 
         let cells: {x: number, y: number} [];
 
@@ -96,6 +96,19 @@ export class BricksBreakerEngine {
             } else {
                 cells = this.lineSW(p1, p2);
             }
+        }
+
+        if (lastBlockHit) {
+
+            let i: number;
+
+            for (i = 0; i < cells.length; i ++) {
+                if (cells[i].x === lastBlockHit.x && cells[i].y === lastBlockHit.y) {
+                    break;
+                }
+            }
+
+            cells.splice(0, i + 1);
         }
 
         // ver si alguna de las celdas de la trayectoria corresponde a un bloque
