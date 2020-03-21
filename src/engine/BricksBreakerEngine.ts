@@ -28,14 +28,14 @@ export class BricksBreakerEngine {
         hitBlockData.push(h);
 
         // TODO: hacer una reflexión
-        // const reflectedSegment = this.getReflectedRay(p1, p2, h);
+        const reflectedSegment = this.getReflectedRay(p1, p2, h);
 
-        // if (reflectedSegment.rp1.x) {
+        if (reflectedSegment.rp1.x) {
 
-        //     h = this.getHitBlock(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
+            h = this.getHitBlock(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
 
-        //     console.log("x:", h.p.x, "y:", h.p.y);
-        // }
+            console.log("x:", h.p.x, "y:", h.p.y);
+        }
 
         return hitBlockData;
     }
@@ -86,14 +86,19 @@ export class BricksBreakerEngine {
 
         if (p2.y > p1.y) {
             if (p2.x > p1.x) {
+                console.log("NE");
                 cells = this.lineNE(p1, p2);
             } else {
+                console.log("NW");
                 cells = this.lineNW(p1, p2);
             }
         } else {
             if (p2.x > p1.x) {
+                // console.log("SE");
                 cells = this.lineSE(p1, p2);
+              
             } else {
+                // console.log("SW");
                 cells = this.lineSW(p1, p2);
             }
         }
@@ -137,6 +142,7 @@ export class BricksBreakerEngine {
         if (blockHit) {
             lastCell = cells[i - 1];
         } else {
+
             lastCell = cells[cells.length - 2];
             blockHit = cells[cells.length - 1];
         }
@@ -216,7 +222,9 @@ export class BricksBreakerEngine {
         let x = p1.x;
         let y = p1.y;
 
-        while (x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
+        let borderHit = false;
+
+        while (x !== p2.x && y !== p2.y && !borderHit) {
 
             if (e <= 0) {
                 y --;
@@ -225,7 +233,14 @@ export class BricksBreakerEngine {
                 x++;
                 e += dy;
             }
-            ret.push({x: x, y: y});
+
+            if (x >= -1 && y >= -1 && y <= this.height) {
+                ret.push({x: x, y: y});
+            }
+
+            if (x === this.width || y === -1) {
+                borderHit = true;
+            }
         }
 
         return ret;
@@ -241,7 +256,11 @@ export class BricksBreakerEngine {
         dy *= 2;
         let x = p1.x;
         let y = p1.y;
-        while ( x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
+
+        let borderHit = false;
+
+        while ( x !== p2.x && y !== p2.y && !borderHit) {
+
             if (e <= 0) {
                 x --;
                 e -= dy;
@@ -249,7 +268,14 @@ export class BricksBreakerEngine {
                 y --;
                 e += dx;
             }
-            ret.push({x: x, y: y});
+
+            if ( x <= this.width &&  y <= this.height) {
+                ret.push({x: x, y: y});
+            }
+
+            if (x === -1 || y === -1) {
+                borderHit = true;
+            }
         }
 
         // TODO: PONER ESTO EN EL RESTO DE LAS FUNCIONES
