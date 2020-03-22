@@ -34,7 +34,7 @@ export class BricksBreakerEngine {
 
             h = this.getHitBlock(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
 
-            console.log("x:", h.p.x, "y:", h.p.y);
+            // console.log("x:", h.p.x, "y:", h.p.y);
         }
 
         return hitBlockData;
@@ -56,7 +56,7 @@ export class BricksBreakerEngine {
                 rp1y = p1.y;
 
                 let d2x = p2.x - h.p.x;
-                rp2x = h.p.x - d2x + 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                rp2x = h.p.x - d2x - 1; // TODO: REFACTORIZAR ESTA EXPRESION
                 rp2y = p2.y;
 
                 break;
@@ -70,7 +70,16 @@ export class BricksBreakerEngine {
                 break;
     
             case BricksBreakerEngine.DOWN:
-                    
+
+                rp1x = p1.x;
+                
+                let d1y = p1.y - h.p.y;     
+                rp1y = h.p.y - d1y + 1;
+                
+                rp2x = p2.x;
+                let d2y = h.p.y - p2.y;
+                rp2y = h.p.y + d2y - 1;
+            
                 break;
         
             default:
@@ -86,10 +95,10 @@ export class BricksBreakerEngine {
 
         if (p2.y > p1.y) {
             if (p2.x > p1.x) {
-                console.log("NE");
+                // console.log("NE");
                 cells = this.lineNE(p1, p2);
             } else {
-                console.log("NW");
+                // console.log("NW");
                 cells = this.lineNW(p1, p2);
             }
         } else {
@@ -98,12 +107,15 @@ export class BricksBreakerEngine {
                 cells = this.lineSE(p1, p2);
               
             } else {
+
                 // console.log("SW");
                 cells = this.lineSW(p1, p2);
             }
         }
 
         if (lastBlockHit) {
+
+            // console.log(JSON.stringify(p1), JSON.stringify(p2));
 
             let i: number;
 
@@ -112,6 +124,9 @@ export class BricksBreakerEngine {
                     break;
                 }
             }
+
+            // console.log(JSON.stringify(lastBlockHit));
+            // console.log(cells);
 
             cells.splice(0, i + 1);
         }
@@ -142,7 +157,6 @@ export class BricksBreakerEngine {
         if (blockHit) {
             lastCell = cells[i - 1];
         } else {
-
             lastCell = cells[cells.length - 2];
             blockHit = cells[cells.length - 1];
         }
@@ -173,7 +187,10 @@ export class BricksBreakerEngine {
         dy *= 2;
         let x = p1.x;
         let y = p1.y;
-        while (x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
+
+        let borderHit = false;
+
+        while (x !== p2.x && y !== p2.y && !borderHit) {
             if (e <= 0) {
                 y ++;
                 e += dx;
@@ -181,7 +198,14 @@ export class BricksBreakerEngine {
                 x++;
                 e -= dy;
             }
-            ret.push({x: x, y: y});
+            
+            if (x <= this.width && y <= this.height) {
+                ret.push({x: x, y: y});
+            }
+
+            if (x === this.width || y === this.height) {
+                borderHit = true;
+            }
         }
 
         return ret;
@@ -197,7 +221,10 @@ export class BricksBreakerEngine {
         dy *= 2;
         let x = p1.x;
         let y = p1.y;
-        while ( x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
+
+        let borderHit = false;
+
+        while ( x !== p2.x && y !== p2.y && !borderHit) {
             if (e <= 0) {
                 x --;
                 e += dy;
@@ -205,7 +232,14 @@ export class BricksBreakerEngine {
                 y ++;
                 e += dx;
             }
-            ret.push({x: x, y: y});
+
+            if (x >= -1 && y <= this.height) {
+                ret.push({x: x, y: y});
+            }
+
+            if (x === -1 || y === this.height) {
+                borderHit = true;
+            }
         }
 
         return ret;
@@ -234,7 +268,7 @@ export class BricksBreakerEngine {
                 e += dy;
             }
 
-            if (x >= -1 && y >= -1 && y <= this.height) {
+            if (x <= this.width && y >= -1) {
                 ret.push({x: x, y: y});
             }
 
@@ -269,7 +303,7 @@ export class BricksBreakerEngine {
                 e += dx;
             }
 
-            if ( x <= this.width &&  y <= this.height) {
+            if ( x >= -1 && y >= -1) {
                 ret.push({x: x, y: y});
             }
 

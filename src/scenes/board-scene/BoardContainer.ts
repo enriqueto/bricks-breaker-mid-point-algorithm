@@ -66,8 +66,8 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         // se trata de buscar un punto lejano que este en el centro de una celda
         let sign = dx > 0 ? 1 : -1;
 
-        p.x = p0.x + sign * BoardContainer.CELL_SIZE * 100;
-        p.y = p0.y + sign * slope * BoardContainer.CELL_SIZE * 100;
+        p.x = p0.x + sign * BoardContainer.CELL_SIZE * 10000;
+        p.y = p0.y + sign * slope * BoardContainer.CELL_SIZE * 10000;
 
         p.y = Math.round(p.y / BoardContainer.CELL_SIZE) * BoardContainer.CELL_SIZE;
 
@@ -151,8 +151,6 @@ export class BoardContainer extends Phaser.GameObjects.Container {
             // RIGHT
             vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (hitBlock.x + 1);
             vy = slope * vx + a;
-
-           
 
             vrx = vx + 10 * BoardContainer.CELL_SIZE;
 

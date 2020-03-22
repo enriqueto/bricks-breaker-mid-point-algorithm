@@ -11,6 +11,8 @@ export class GameManager {
             {x: 3, y: 2, hits: 15}
         ];
 
+        // GameVars.blocks = [];
+
         if (GameVars.currentScene.sys.game.device.os.desktop) {
 
             GameVars.scaleY = 1;

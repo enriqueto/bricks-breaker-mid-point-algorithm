@@ -39,8 +39,6 @@ export class BoardScene extends Phaser.Scene {
 
         this.gui = new GUI(this);
         this.add.existing(this.gui);
-
-        console.log("EN EL METODO getRaySegment(...) IGNORAR LAS CELDAS DE LA PROLONGACION DE LA LINEA HASTA QUE TOQUE EL BLOQUE QUE YA FUE TOCADO");
     }
 
     public update(): void {

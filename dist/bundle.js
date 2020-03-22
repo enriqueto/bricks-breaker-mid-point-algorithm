@@ -377,30 +377,30 @@ var BricksBreakerEngine = /** @class */ (function () {
         this.height = height;
         this.blocks = blocks;
     }
-    BricksBreakerEngine.prototype.getTrajectory = function (p1, p2) {
-        var trajectoryData = [];
-        var t = this.getRaySegment(p1, p2);
-        trajectoryData.push(t);
+    BricksBreakerEngine.prototype.getTrajectoryData = function (p1, p2) {
+        var hitBlockData = [];
+        var h = this.getHitBlock(p1, p2);
+        hitBlockData.push(h);
         // TODO: hacer una reflexión
-        var reflectedSegment = this.getReflectedRay(p1, p2, t);
+        var reflectedSegment = this.getReflectedRay(p1, p2, h);
         if (reflectedSegment.rp1.x) {
-            t = this.getRaySegment(reflectedSegment.rp1, reflectedSegment.rp2);
-            console.log("x:", t.p.x, "y:", t.p.y);
+            h = this.getHitBlock(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
+            console.log("x:", h.p.x, "y:", h.p.y);
         }
-        return trajectoryData;
+        return hitBlockData;
     };
-    BricksBreakerEngine.prototype.getReflectedRay = function (p1, p2, t) {
+    BricksBreakerEngine.prototype.getReflectedRay = function (p1, p2, h) {
         var rp1x;
         var rp1y;
         var rp2x;
         var rp2y;
-        switch (t.side) {
+        switch (h.side) {
             case BricksBreakerEngine.LEFT:
-                var d1x = t.p.x - p1.x;
-                rp1x = t.p.x + d1x - 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                var d1x = h.p.x - p1.x;
+                rp1x = h.p.x + d1x - 1; // TODO: REFACTORIZAR ESTA EXPRESION
                 rp1y = p1.y;
-                var d2x = p2.x - t.p.x;
-                rp2x = t.p.x - d2x + 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                var d2x = p2.x - h.p.x;
+                rp2x = h.p.x - d2x + 1; // TODO: REFACTORIZAR ESTA EXPRESION
                 rp2y = p2.y;
                 break;
             case BricksBreakerEngine.RIGHT:
@@ -414,23 +414,36 @@ var BricksBreakerEngine = /** @class */ (function () {
         }
         return { rp1: { x: rp1x, y: rp1y }, rp2: { x: rp2x, y: rp2y } };
     };
-    BricksBreakerEngine.prototype.getRaySegment = function (p1, p2) {
+    BricksBreakerEngine.prototype.getHitBlock = function (p1, p2, lastBlockHit) {
         var cells;
         if (p2.y > p1.y) {
             if (p2.x > p1.x) {
+                console.log("NE");
                 cells = this.lineNE(p1, p2);
             }
             else {
+                console.log("NW");
                 cells = this.lineNW(p1, p2);
             }
         }
         else {
             if (p2.x > p1.x) {
+                // console.log("SE");
                 cells = this.lineSE(p1, p2);
             }
             else {
+                // console.log("SW");
                 cells = this.lineSW(p1, p2);
             }
+        }
+        if (lastBlockHit) {
+            var i_1;
+            for (i_1 = 0; i_1 < cells.length; i_1++) {
+                if (cells[i_1].x === lastBlockHit.x && cells[i_1].y === lastBlockHit.y) {
+                    break;
+                }
+            }
+            cells.splice(0, i_1 + 1);
         }
         // ver si alguna de las celdas de la trayectoria corresponde a un bloque
         var i;
@@ -525,7 +538,8 @@ var BricksBreakerEngine = /** @class */ (function () {
         dy *= 2;
         var x = p1.x;
         var y = p1.y;
-        while (x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
+        var borderHit = false;
+        while (x !== p2.x && y !== p2.y && !borderHit) {
             if (e <= 0) {
                 y--;
                 e += dx;
@@ -534,7 +548,12 @@ var BricksBreakerEngine = /** @class */ (function () {
                 x++;
                 e += dy;
             }
-            ret.push({ x: x, y: y });
+            if (x >= -1 && y >= -1 && y <= this.height) {
+                ret.push({ x: x, y: y });
+            }
+            if (x === this.width || y === -1) {
+                borderHit = true;
+            }
         }
         return ret;
     };
@@ -547,7 +566,8 @@ var BricksBreakerEngine = /** @class */ (function () {
         dy *= 2;
         var x = p1.x;
         var y = p1.y;
-        while (x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
+        var borderHit = false;
+        while (x !== p2.x && y !== p2.y && !borderHit) {
             if (e <= 0) {
                 x--;
                 e -= dy;
@@ -556,7 +576,12 @@ var BricksBreakerEngine = /** @class */ (function () {
                 y--;
                 e += dx;
             }
-            ret.push({ x: x, y: y });
+            if (x <= this.width && y <= this.height) {
+                ret.push({ x: x, y: y });
+            }
+            if (x === -1 || y === -1) {
+                borderHit = true;
+            }
         }
         // TODO: PONER ESTO EN EL RESTO DE LAS FUNCIONES
         // while (x !== p2.x) {
@@ -875,7 +900,7 @@ var BoardContainer = /** @class */ (function (_super) {
     BoardContainer.prototype.drawRay = function (p) {
         var start = { x: 4, y: 10 };
         var end = this.getGridEndPoint(p);
-        var trajectory = BricksBreakerEngine_1.BricksBreakerEngine.currentInstance.getTrajectory(start, end);
+        var trajectory = BricksBreakerEngine_1.BricksBreakerEngine.currentInstance.getTrajectoryData(start, end);
         var p0 = { x: 0, y: 5 * BoardContainer.CELL_SIZE };
         var correctedSlope = (end.y - start.y) / (end.x - start.x);
         var vertices = this.getTrajectoryVertices(p0, correctedSlope, trajectory);
@@ -913,8 +938,7 @@ var BoardContainer = /** @class */ (function (_super) {
         // la ecuacion es y = slope * x + a
         var a = p0.y - slope * p0.x;
         var vertices = [p0];
-        // const block = GameVars.blocks[trajectory[0].blockIndex];
-        var blockPos = trajectory[0].p;
+        var hitBlock = trajectory[0].p;
         var side = trajectory[0].side;
         var vx;
         var vy;
@@ -922,11 +946,11 @@ var BoardContainer = /** @class */ (function (_super) {
         var vrx = 0;
         var vry = 0;
         if (side === BricksBreakerEngine_1.BricksBreakerEngine.UP) {
-            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * blockPos.y + 1;
+            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * hitBlock.y + 1;
             vx = (vy - a) / slope;
         }
         else if (side === BricksBreakerEngine_1.BricksBreakerEngine.DOWN) {
-            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (blockPos.y + 1);
+            vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (hitBlock.y + 1);
             vx = (vy - a) / slope;
             if (slope > 0) {
                 vrx = vx - 10 * BoardContainer.CELL_SIZE;
@@ -935,26 +959,22 @@ var BoardContainer = /** @class */ (function (_super) {
                 vrx = vx + 10 * BoardContainer.CELL_SIZE;
             }
             slope *= -1;
-            vry = vy + slope * vrx;
+            vry = vy + slope * (vrx - vx);
         }
         else if (side === BricksBreakerEngine_1.BricksBreakerEngine.LEFT) {
-            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * blockPos.x;
+            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * hitBlock.x;
             vy = slope * vx + a;
-            if (slope > 0) {
-                vrx = vx + 10 * BoardContainer.CELL_SIZE;
-            }
-            else {
-                vrx = vx - 10 * BoardContainer.CELL_SIZE;
-            }
-            vry = vy - slope * vrx;
+            vrx = vx - 10 * BoardContainer.CELL_SIZE;
+            slope *= -1;
+            vry = vy + slope * (vrx - vx);
         }
         else {
             // RIGHT
-            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (blockPos.x + 1);
+            vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (hitBlock.x + 1);
             vy = slope * vx + a;
-            slope *= -1;
             vrx = vx + 10 * BoardContainer.CELL_SIZE;
-            vry = vy + slope * vrx;
+            slope *= -1;
+            vry = vy + slope * (vrx - vx);
         }
         vertices.push({ x: vx, y: vy });
         vertices.push({ x: vrx, y: vry });
