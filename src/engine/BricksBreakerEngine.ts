@@ -34,7 +34,7 @@ export class BricksBreakerEngine {
 
             h = this.getHitBlock(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
 
-            // console.log("x:", h.p.x, "y:", h.p.y);
+            console.log("x:", h.p.x, "y:", h.p.y);
         }
 
         return hitBlockData;
@@ -51,18 +51,22 @@ export class BricksBreakerEngine {
 
             case BricksBreakerEngine.LEFT:
 
-                let d1x = h.p.x - p1.x;
-                rp1x = h.p.x + d1x - 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                rp1x = 2 * h.p.x - p1.x - 1; 
                 rp1y = p1.y;
 
-                let d2x = p2.x - h.p.x;
-                rp2x = h.p.x - d2x - 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                rp2x = 2 * h.p.x - p2.x - 1; 
                 rp2y = p2.y;
 
                 break;
 
             case BricksBreakerEngine.RIGHT:
                 
+                rp1x = 2 * h.p.x - p1.x + 1; 
+                rp1y = p1.y;
+
+                rp2x = 2 * h.p.x - p2.x - 1; 
+                rp2y = p2.y;
+
                 break;
 
             case BricksBreakerEngine.UP:
@@ -72,13 +76,10 @@ export class BricksBreakerEngine {
             case BricksBreakerEngine.DOWN:
 
                 rp1x = p1.x;
-                
-                let d1y = p1.y - h.p.y;     
-                rp1y = h.p.y - d1y + 1;
+                rp1y = 2 * h.p.y - p1.y + 1;     
                 
                 rp2x = p2.x;
-                let d2y = h.p.y - p2.y;
-                rp2y = h.p.y + d2y - 1;
+                rp2y = 2 * h.p.y - p2.y - 1;     
             
                 break;
         
@@ -105,17 +106,13 @@ export class BricksBreakerEngine {
             if (p2.x > p1.x) {
                 // console.log("SE");
                 cells = this.lineSE(p1, p2);
-              
             } else {
-
                 // console.log("SW");
                 cells = this.lineSW(p1, p2);
             }
         }
 
         if (lastBlockHit) {
-
-            // console.log(JSON.stringify(p1), JSON.stringify(p2));
 
             let i: number;
 
@@ -124,9 +121,6 @@ export class BricksBreakerEngine {
                     break;
                 }
             }
-
-            // console.log(JSON.stringify(lastBlockHit));
-            // console.log(cells);
 
             cells.splice(0, i + 1);
         }

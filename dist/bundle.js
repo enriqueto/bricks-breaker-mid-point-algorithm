@@ -187,6 +187,7 @@ var GameManager = /** @class */ (function () {
             { x: 2, y: 6, hits: 20 },
             { x: 3, y: 2, hits: 15 }
         ];
+        // GameVars.blocks = [];
         if (GameVars_1.GameVars.currentScene.sys.game.device.os.desktop) {
             GameVars_1.GameVars.scaleY = 1;
         }
@@ -385,7 +386,7 @@ var BricksBreakerEngine = /** @class */ (function () {
         var reflectedSegment = this.getReflectedRay(p1, p2, h);
         if (reflectedSegment.rp1.x) {
             h = this.getHitBlock(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
-            console.log("x:", h.p.x, "y:", h.p.y);
+            // console.log("x:", h.p.x, "y:", h.p.y);
         }
         return hitBlockData;
     };
@@ -400,7 +401,7 @@ var BricksBreakerEngine = /** @class */ (function () {
                 rp1x = h.p.x + d1x - 1; // TODO: REFACTORIZAR ESTA EXPRESION
                 rp1y = p1.y;
                 var d2x = p2.x - h.p.x;
-                rp2x = h.p.x - d2x + 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                rp2x = h.p.x - d2x - 1; // TODO: REFACTORIZAR ESTA EXPRESION
                 rp2y = p2.y;
                 break;
             case BricksBreakerEngine.RIGHT:
@@ -408,6 +409,12 @@ var BricksBreakerEngine = /** @class */ (function () {
             case BricksBreakerEngine.UP:
                 break;
             case BricksBreakerEngine.DOWN:
+                rp1x = p1.x;
+                var d1y = p1.y - h.p.y;
+                rp1y = h.p.y - d1y + 1;
+                rp2x = p2.x;
+                var d2y = h.p.y - p2.y;
+                rp2y = h.p.y + d2y - 1;
                 break;
             default:
                 break;
@@ -418,11 +425,11 @@ var BricksBreakerEngine = /** @class */ (function () {
         var cells;
         if (p2.y > p1.y) {
             if (p2.x > p1.x) {
-                console.log("NE");
+                // console.log("NE");
                 cells = this.lineNE(p1, p2);
             }
             else {
-                console.log("NW");
+                // console.log("NW");
                 cells = this.lineNW(p1, p2);
             }
         }
@@ -437,12 +444,15 @@ var BricksBreakerEngine = /** @class */ (function () {
             }
         }
         if (lastBlockHit) {
+            // console.log(JSON.stringify(p1), JSON.stringify(p2));
             var i_1;
             for (i_1 = 0; i_1 < cells.length; i_1++) {
                 if (cells[i_1].x === lastBlockHit.x && cells[i_1].y === lastBlockHit.y) {
                     break;
                 }
             }
+            // console.log(JSON.stringify(lastBlockHit));
+            // console.log(cells);
             cells.splice(0, i_1 + 1);
         }
         // ver si alguna de las celdas de la trayectoria corresponde a un bloque
@@ -494,7 +504,8 @@ var BricksBreakerEngine = /** @class */ (function () {
         dy *= 2;
         var x = p1.x;
         var y = p1.y;
-        while (x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
+        var borderHit = false;
+        while (x !== p2.x && y !== p2.y && !borderHit) {
             if (e <= 0) {
                 y++;
                 e += dx;
@@ -503,7 +514,12 @@ var BricksBreakerEngine = /** @class */ (function () {
                 x++;
                 e -= dy;
             }
-            ret.push({ x: x, y: y });
+            if (x <= this.width && y <= this.height) {
+                ret.push({ x: x, y: y });
+            }
+            if (x === this.width || y === this.height) {
+                borderHit = true;
+            }
         }
         return ret;
     };
@@ -516,7 +532,8 @@ var BricksBreakerEngine = /** @class */ (function () {
         dy *= 2;
         var x = p1.x;
         var y = p1.y;
-        while (x !== p2.x && y !== p2.y && x >= 0 && x < this.width && y >= 0 && y < this.height) {
+        var borderHit = false;
+        while (x !== p2.x && y !== p2.y && !borderHit) {
             if (e <= 0) {
                 x--;
                 e += dy;
@@ -525,7 +542,12 @@ var BricksBreakerEngine = /** @class */ (function () {
                 y++;
                 e += dx;
             }
-            ret.push({ x: x, y: y });
+            if (x >= -1 && y <= this.height) {
+                ret.push({ x: x, y: y });
+            }
+            if (x === -1 || y === this.height) {
+                borderHit = true;
+            }
         }
         return ret;
     };
@@ -548,7 +570,7 @@ var BricksBreakerEngine = /** @class */ (function () {
                 x++;
                 e += dy;
             }
-            if (x >= -1 && y >= -1 && y <= this.height) {
+            if (x <= this.width && y >= -1) {
                 ret.push({ x: x, y: y });
             }
             if (x === this.width || y === -1) {
@@ -576,7 +598,7 @@ var BricksBreakerEngine = /** @class */ (function () {
                 y--;
                 e += dx;
             }
-            if (x <= this.width && y <= this.height) {
+            if (x >= -1 && y >= -1) {
                 ret.push({ x: x, y: y });
             }
             if (x === -1 || y === -1) {
@@ -913,8 +935,8 @@ var BoardContainer = /** @class */ (function (_super) {
         var slope = dy / dx;
         // se trata de buscar un punto lejano que este en el centro de una celda
         var sign = dx > 0 ? 1 : -1;
-        p.x = p0.x + sign * BoardContainer.CELL_SIZE * 100;
-        p.y = p0.y + sign * slope * BoardContainer.CELL_SIZE * 100;
+        p.x = p0.x + sign * BoardContainer.CELL_SIZE * 10000;
+        p.y = p0.y + sign * slope * BoardContainer.CELL_SIZE * 10000;
         p.y = Math.round(p.y / BoardContainer.CELL_SIZE) * BoardContainer.CELL_SIZE;
         // pasar a coordenadas de celda
         var start = { x: 4, y: 10 };
@@ -1040,7 +1062,6 @@ var BoardScene = /** @class */ (function (_super) {
         this.add.existing(this.hud);
         this.gui = new GUI_1.GUI(this);
         this.add.existing(this.gui);
-        console.log("EN EL METODO getRaySegment(...) IGNORAR LAS CELDAS DE LA PROLONGACION DE LA LINEA HASTA QUE TOQUE EL BLOQUE QUE YA FUE TOCADO");
     };
     BoardScene.prototype.update = function () {
         var pointer = this.input.activePointer;
