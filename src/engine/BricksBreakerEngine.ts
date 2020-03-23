@@ -33,8 +33,9 @@ export class BricksBreakerEngine {
         if (reflectedSegment.rp1.x) {
 
             h = this.getHitBlock(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
+            // console.log("x:", h.p.x, "y:", h.p.y);
+            hitBlockData.push(h);
 
-            console.log("x:", h.p.x, "y:", h.p.y);
         }
 
         return hitBlockData;

@@ -44,12 +44,12 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         const start = {x: 4, y: 10};
         const end = this.getGridEndPoint(p);
 
-        const trajectory = BricksBreakerEngine.currentInstance.getTrajectoryData(start, end); 
+        const trajectoryData = BricksBreakerEngine.currentInstance.getTrajectoryData(start, end); 
 
         let p0 = {x: 0, y: 5 * BoardContainer.CELL_SIZE};
 
         const correctedSlope = (end.y - start.y) / (end.x - start.x);
-        const vertices: {x: number, y: number} [] = this.getTrajectoryVertices(p0, correctedSlope, trajectory);
+        const vertices: {x: number, y: number} [] = this.getTrajectoryVertices(p0, correctedSlope, trajectoryData);
        
         this.drawLineSegments(vertices);
     }
@@ -98,22 +98,18 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         this.rayGraphics.stroke();
     }
 
-    private getTrajectoryVertices(p0: {x: number, y: number}, slope: number, trajectory: {p: {x: number, y: number}, side: string} []): {x: number, y: number} [] {
+    private getVertexOnHitBlock(p: {x: number, y: number}, slope: number, hitBlockData: {p: {x: number, y: number}, side: string}): {x: number, y: number} {
+
+        const hitBlock = hitBlockData.p;
+        const side = hitBlockData.side;
 
         // la ecuacion es y = slope * x + a
-        let a = p0.y - slope * p0.x;
+        // let a = p0.y - slope * p0.x;
 
-        let vertices: {x: number, y: number} [] = [p0];
-
-        const hitBlock = trajectory[0].p;
-        const side = trajectory[0].side;
+        let a = p.y - slope * p.x;
 
         let vx: number;
         let vy: number;
-
-        // TODO: ARREGLAR ESTO
-        let vrx = 0;
-        let vry = 0;
 
         if (side === BricksBreakerEngine.UP) {
 
@@ -125,45 +121,34 @@ export class BoardContainer extends Phaser.GameObjects.Container {
             vy = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (hitBlock.y + 1);
             vx = (vy - a) / slope;
 
-            if (slope > 0) {
-                vrx = vx - 10 * BoardContainer.CELL_SIZE;
-            } else {
-                vrx = vx + 10 * BoardContainer.CELL_SIZE;
-            }
-
-            slope *= -1;
-
-            vry = vy + slope * (vrx - vx);
-
         } else if ( side === BricksBreakerEngine.LEFT) {
 
             vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * hitBlock.x;
             vy = slope * vx + a;
 
-            vrx = vx - 10 * BoardContainer.CELL_SIZE;
-            
-            slope *= -1;
-
-            vry = vy + slope * (vrx - vx);
-
         } else {
 
-            // RIGHT
             vx = -BoardContainer.BOARD_WIDTH / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * (hitBlock.x + 1);
             vy = slope * vx + a;
-
-            vrx = vx + 10 * BoardContainer.CELL_SIZE;
-
-            slope *= -1;
-
-            vry = vy + slope * (vrx - vx);
         }
 
-        vertices.push({x: vx, y: vy});
+        return {x: vx, y: vy};
+    }
 
-        vertices.push({x: vrx, y: vry});
+    private getTrajectoryVertices(p0: {x: number, y: number}, slope: number, trajectoryData: {p: {x: number, y: number}, side: string} []): {x: number, y: number} [] {
 
-        // la linea reflejada
+
+        let vertices: {x: number, y: number} [] = [p0];
+
+        let v = this.getVertexOnHitBlock(p0, slope, trajectoryData[0]);
+
+        vertices.push(v);
+
+        slope *= -1;
+
+        v = this.getVertexOnHitBlock(v, slope, trajectoryData[1]);
+
+        vertices.push(v);
 
         return vertices;
     }

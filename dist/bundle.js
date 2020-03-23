@@ -387,6 +387,7 @@ var BricksBreakerEngine = /** @class */ (function () {
         if (reflectedSegment.rp1.x) {
             h = this.getHitBlock(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
             // console.log("x:", h.p.x, "y:", h.p.y);
+            hitBlockData.push(h);
         }
         return hitBlockData;
     };
@@ -397,24 +398,24 @@ var BricksBreakerEngine = /** @class */ (function () {
         var rp2y;
         switch (h.side) {
             case BricksBreakerEngine.LEFT:
-                var d1x = h.p.x - p1.x;
-                rp1x = h.p.x + d1x - 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                rp1x = 2 * h.p.x - p1.x - 1;
                 rp1y = p1.y;
-                var d2x = p2.x - h.p.x;
-                rp2x = h.p.x - d2x - 1; // TODO: REFACTORIZAR ESTA EXPRESION
+                rp2x = 2 * h.p.x - p2.x - 1;
                 rp2y = p2.y;
                 break;
             case BricksBreakerEngine.RIGHT:
+                rp1x = 2 * h.p.x - p1.x + 1;
+                rp1y = p1.y;
+                rp2x = 2 * h.p.x - p2.x - 1;
+                rp2y = p2.y;
                 break;
             case BricksBreakerEngine.UP:
                 break;
             case BricksBreakerEngine.DOWN:
                 rp1x = p1.x;
-                var d1y = p1.y - h.p.y;
-                rp1y = h.p.y - d1y + 1;
+                rp1y = 2 * h.p.y - p1.y + 1;
                 rp2x = p2.x;
-                var d2y = h.p.y - p2.y;
-                rp2y = h.p.y + d2y - 1;
+                rp2y = 2 * h.p.y - p2.y - 1;
                 break;
             default:
                 break;
@@ -444,15 +445,12 @@ var BricksBreakerEngine = /** @class */ (function () {
             }
         }
         if (lastBlockHit) {
-            // console.log(JSON.stringify(p1), JSON.stringify(p2));
             var i_1;
             for (i_1 = 0; i_1 < cells.length; i_1++) {
                 if (cells[i_1].x === lastBlockHit.x && cells[i_1].y === lastBlockHit.y) {
                     break;
                 }
             }
-            // console.log(JSON.stringify(lastBlockHit));
-            // console.log(cells);
             cells.splice(0, i_1 + 1);
         }
         // ver si alguna de las celdas de la trayectoria corresponde a un bloque
