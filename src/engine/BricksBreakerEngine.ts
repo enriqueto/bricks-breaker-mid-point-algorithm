@@ -22,20 +22,26 @@ export class BricksBreakerEngine {
 
     public getTrajectoryData(p1: {x: number, y: number}, p2: {x: number, y: number}): {p: {x: number, y: number}, side: string} [] {
         
+       
         const hitBlockData: {p: {x: number, y: number}, side: string} [] = [];
 
         let h = this.getHitBlock(p1, p2);
         hitBlockData.push(h);
 
-        // TODO: hacer una reflexión
-        const reflectedSegment = this.getReflectedRay(p1, p2, h);
+        let reflectedSegment = this.getReflectedRay(p1, p2, h);
 
-        if (reflectedSegment.rp1.x) {
+        while (h && h.p.y !== 11) {
 
             h = this.getHitBlock(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
-            // console.log("x:", h.p.x, "y:", h.p.y);
-            hitBlockData.push(h);
+            
+            // TODO: ARREGLAR ESTO
+            if (h) {
 
+                hitBlockData.push(h);
+
+                reflectedSegment = this.getReflectedRay(reflectedSegment.rp1, reflectedSegment.rp2, h);
+            }
+           
         }
 
         return hitBlockData;
@@ -62,7 +68,7 @@ export class BricksBreakerEngine {
 
             case BricksBreakerEngine.RIGHT:
                 
-                rp1x = 2 * h.p.x - p1.x + 1; 
+                rp1x = 2 * h.p.x - p1.x + 1;  
                 rp1y = p1.y;
 
                 rp2x = 2 * h.p.x - p2.x - 1; 
@@ -71,7 +77,13 @@ export class BricksBreakerEngine {
                 break;
 
             case BricksBreakerEngine.UP:
+
+                rp1x = p1.x;
+                rp1y = 2 * h.p.y - p1.y - 1;     
                 
+                rp2x = p2.x;
+                rp2y = 2 * h.p.y - p2.y - 1;
+
                 break;
     
             case BricksBreakerEngine.DOWN:
@@ -126,6 +138,11 @@ export class BricksBreakerEngine {
             cells.splice(0, i + 1);
         }
 
+        // TODO: CHAPUZA ARREGLAR ESTO
+        if (cells.length < 2) {
+            return null;
+        }
+
         // ver si alguna de las celdas de la trayectoria corresponde a un bloque
         let i: number;
 
@@ -152,6 +169,7 @@ export class BricksBreakerEngine {
         if (blockHit) {
             lastCell = cells[i - 1];
         } else {
+
             lastCell = cells[cells.length - 2];
             blockHit = cells[cells.length - 1];
         }

@@ -96,6 +96,27 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         }
 
         this.rayGraphics.stroke();
+        
+        // el punto final
+        this.rayGraphics.lineStyle(2, 0xFF0000);
+        this.rayGraphics.strokeCircle(vertices[vertices.length - 1].x, vertices[vertices.length - 1].y, 5);  
+    }
+
+    private getTrajectoryVertices(p0: {x: number, y: number}, slope: number, trajectoryData: {p: {x: number, y: number}, side: string} []): {x: number, y: number} [] {
+
+        let vertices: {x: number, y: number} [] = [p0];
+        let v = p0;
+
+        for (let i = 0; i < trajectoryData.length; i ++) {
+
+            v = this.getVertexOnHitBlock(v, slope, trajectoryData[i]);
+
+            vertices.push(v);
+    
+            slope *= -1;
+        }
+
+        return vertices;
     }
 
     private getVertexOnHitBlock(p: {x: number, y: number}, slope: number, hitBlockData: {p: {x: number, y: number}, side: string}): {x: number, y: number} {
@@ -133,23 +154,5 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         }
 
         return {x: vx, y: vy};
-    }
-
-    private getTrajectoryVertices(p0: {x: number, y: number}, slope: number, trajectoryData: {p: {x: number, y: number}, side: string} []): {x: number, y: number} [] {
-
-
-        let vertices: {x: number, y: number} [] = [p0];
-
-        let v = this.getVertexOnHitBlock(p0, slope, trajectoryData[0]);
-
-        vertices.push(v);
-
-        slope *= -1;
-
-        v = this.getVertexOnHitBlock(v, slope, trajectoryData[1]);
-
-        vertices.push(v);
-
-        return vertices;
     }
 }
