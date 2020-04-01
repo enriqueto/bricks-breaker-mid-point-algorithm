@@ -22,17 +22,16 @@ export class BricksBreakerEngine {
 
     public getTrajectoryData(p1: {x: number, y: number}, p2: {x: number, y: number}): {p: {x: number, y: number}, side: string} [] {
         
-       
         const hitBlockData: {p: {x: number, y: number}, side: string} [] = [];
 
-        let h = this.getHitBlock(p1, p2);
+        let h = this.getBlockHit(p1, p2);
         hitBlockData.push(h);
 
         let reflectedSegment = this.getReflectedRay(p1, p2, h);
 
         while (h && h.p.y !== 11) {
 
-            h = this.getHitBlock(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
+            h = this.getBlockHit(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
             
             // TODO: ARREGLAR ESTO
             if (h) {
@@ -41,13 +40,12 @@ export class BricksBreakerEngine {
 
                 reflectedSegment = this.getReflectedRay(reflectedSegment.rp1, reflectedSegment.rp2, h);
             }
-           
         }
 
         return hitBlockData;
     }
 
-    private getReflectedRay(p1: {x: number, y: number}, p2: {x: number, y: number}, h: {p: {x: number, y: number}, side: string}): {rp1: {x: number, y: number}, rp2: {x: number, y: number}} {
+    public getReflectedRay(p1: {x: number, y: number}, p2: {x: number, y: number}, h: {p: {x: number, y: number}, side: string}): {rp1: {x: number, y: number}, rp2: {x: number, y: number}} {
         
         let rp1x: number;
         let rp1y: number;
@@ -71,7 +69,7 @@ export class BricksBreakerEngine {
                 rp1x = 2 * h.p.x - p1.x + 1;  
                 rp1y = p1.y;
 
-                rp2x = 2 * h.p.x - p2.x - 1; 
+                rp2x = 2 * h.p.x - p2.x + 1; 
                 rp2y = p2.y;
 
                 break;
@@ -92,7 +90,7 @@ export class BricksBreakerEngine {
                 rp1y = 2 * h.p.y - p1.y + 1;     
                 
                 rp2x = p2.x;
-                rp2y = 2 * h.p.y - p2.y - 1;     
+                rp2y = 2 * h.p.y - p2.y + 1;     
             
                 break;
         
@@ -103,7 +101,7 @@ export class BricksBreakerEngine {
         return {rp1: {x: rp1x, y: rp1y}, rp2: {x: rp2x, y: rp2y}};
     }
 
-    private getHitBlock(p1: {x: number, y: number}, p2: {x: number, y: number}, lastBlockHit?: {x: number, y: number}): {p: {x: number, y: number}, side: string} {
+    private getBlockHit(p1: {x: number, y: number}, p2: {x: number, y: number}, lastBlockHit?: {x: number, y: number}): {p: {x: number, y: number}, side: string} {
 
         let cells: {x: number, y: number} [];
 
@@ -136,11 +134,15 @@ export class BricksBreakerEngine {
             }
 
             cells.splice(0, i + 1);
-        }
 
-        // TODO: CHAPUZA ARREGLAR ESTO
-        if (cells.length < 2) {
-            return null;
+            // if (cells.length === 0) {
+            //     console.log("ARRIBA ESPAÑA!", lastBlockHit);
+            // }
+
+             // TODO: CHAPUZA ARREGLAR ESTO
+            if (cells.length < 2) {
+                return null;
+            }
         }
 
         // ver si alguna de las celdas de la trayectoria corresponde a un bloque
@@ -203,7 +205,12 @@ export class BricksBreakerEngine {
 
         let borderHit = false;
 
+        let i = 0;
+
         while (x !== p2.x && y !== p2.y && !borderHit) {
+
+            i ++;
+
             if (e <= 0) {
                 y ++;
                 e += dx;

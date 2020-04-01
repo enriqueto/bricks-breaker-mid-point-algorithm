@@ -6,10 +6,10 @@ export class GameManager {
     public static init(): void {
 
         GameVars.blocks = [
-            {x: 6, y: 4, hits: 10},
-            {x: 2, y: 6, hits: 20},
+            {x: 7, y: 3, hits: 10},
+            {x: 1, y: 7, hits: 20},
             {x: 3, y: 2, hits: 15},
-            {x: 7, y: 7, hits: 30}
+            {x: 8, y: 1, hits: 30}
         ];
 
         // GameVars.blocks = [];

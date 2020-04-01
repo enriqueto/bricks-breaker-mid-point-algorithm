@@ -17,7 +17,6 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         super(scene);
 
         this.rayGraphics = new Phaser.GameObjects.Graphics(this.scene);
-        
         this.add(this.rayGraphics);
 
         this.x = GameConstants.GAME_WIDTH / 2;
@@ -37,12 +36,14 @@ export class BoardContainer extends Phaser.GameObjects.Container {
             block.y = -BoardContainer.BOARD_HEIGHT / 2 * BoardContainer.CELL_SIZE + BoardContainer.CELL_SIZE * y;
             this.add(block);
         } 
+
+        // this.drawTestingGeometry();
     }
 
     public drawRay(p: {x: number, y: number}): void {
 
         const start = {x: 4, y: 10};
-        const end = this.getGridEndPoint(p);
+        const end = this.snapEndPointToGrid(p);
 
         const trajectoryData = BricksBreakerEngine.currentInstance.getTrajectoryData(start, end); 
 
@@ -54,14 +55,14 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         this.drawLineSegments(vertices);
     }
 
-    private getGridEndPoint(p: {x: number, y: number}): {x: number, y: number} {
+    private snapEndPointToGrid(p: {x: number, y: number}): {x: number, y: number} {
         
         let p0 = {x: 0, y: 5 * BoardContainer.CELL_SIZE};
 
         let dx = p.x - p0.x;
         let dy = p.y - p0.y;
 
-        const slope = dy / dx;
+        let slope = dy / dx;
 
         // se trata de buscar un punto lejano que este en el centro de una celda
         let sign = dx > 0 ? 1 : -1;
@@ -154,5 +155,63 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         }
 
         return {x: vx, y: vy};
+    }
+
+    private drawTestingGeometry(): void {
+
+        const testGraphics = new Phaser.GameObjects.Graphics(this.scene);
+        this.add(testGraphics);
+
+        let p1 = {x: 8, y: 0};
+        let p2 = {x: 3, y: 10};
+
+        let bp1 = this.getBoardCoordinates(p1);
+        let bp2 = this.getBoardCoordinates(p2);
+
+        testGraphics.lineStyle(2, 0xFF0000);
+        testGraphics.strokeCircle(bp1.x, bp1.y , 5);  
+        testGraphics.strokeCircle(bp2.x, bp2.y , 5);
+      
+        // la celda de impacto
+        let h = {p: {x: 4, y: 9}, side: BricksBreakerEngine.UP};
+
+        // // LA LINEA HORIZONTAL
+        testGraphics.lineStyle(4, 0x0000FF);
+        let vl1 = this.getBoardCoordinates({x: -100, y: h.p.y - .5});
+        let vl2 = this.getBoardCoordinates({x: 100, y: h.p.y - .5});
+
+        testGraphics.moveTo(vl1.x, vl1.y);
+        testGraphics.lineTo(vl2.x, vl2.y);
+        testGraphics.stroke();
+
+        // // //  la linea entre los 2 puntos
+        testGraphics.lineStyle(2, 0x00FF00);
+        testGraphics.moveTo(bp1.x, bp1.y);
+        testGraphics.lineTo(bp2.x, bp2.y);
+        testGraphics.stroke();
+
+        let reflectedSegment = BricksBreakerEngine.currentInstance.getReflectedRay(p1, p2, h);
+
+        testGraphics.lineStyle(2, 0xFF0000);
+
+        bp1 = this.getBoardCoordinates(reflectedSegment.rp1);
+        bp2 = this.getBoardCoordinates(reflectedSegment.rp2);
+
+        testGraphics.lineStyle(2, 0xFF0000);
+        testGraphics.strokeCircle(bp1.x, bp1.y , 5);  
+        testGraphics.strokeCircle(bp2.x, bp2.y , 5);
+
+        testGraphics.lineStyle(2, 0x00FF00);
+        testGraphics.moveTo(bp1.x, bp1.y);
+        testGraphics.lineTo(bp2.x, bp2.y);
+        testGraphics.stroke();
+    }
+
+    private getBoardCoordinates(p: {x: number, y: number}): {x: number, y: number} {
+
+        const x = (-BoardContainer.BOARD_WIDTH / 2  + .5 + p.x) * BoardContainer.CELL_SIZE;
+        const y = (-BoardContainer.BOARD_HEIGHT / 2  + .5 + p.y) * BoardContainer.CELL_SIZE;
+
+        return {x: x, y: y};
     }
 }

@@ -47,8 +47,8 @@ export class BoardScene extends Phaser.Scene {
 
         if (pointer.isDown) {
 
-            // pasamos a las coordenadas del board
-            const p = {x: pointer.x - this.boardContainer.x, y: pointer.y - this.boardContainer.y};
+            // pasamos a las coordenadas del tablero
+            const p = {x: Math.round((pointer.x - this.boardContainer.x) * 100) / 100, y:  Math.round((pointer.y - this.boardContainer.y) * 100) / 100};
  
             if (p.y < BoardContainer.CELL_SIZE * 5 * .985) {
                 this.boardContainer.drawRay(p);
