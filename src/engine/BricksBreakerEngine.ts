@@ -98,51 +98,82 @@ export class BricksBreakerEngine {
                 break;
         }
 
-        return {rp1: {x: rp1x, y: rp1y}, rp2: {x: rp2x, y: rp2y}};
+        // EL PROBLEMA ES QUE LOS PUNTOS REFLEJADOS NO SIEMPRE FUERA DEL TABLERO
+        let rp1 = {x: rp1x, y: rp1y};
+        let rp2 = {x: rp2x, y: rp2y};
+
+        if (rp2.x >= 0 && rp2.x < this.width && rp2.y >= 0 && rp2.y < this.height) {
+      
+            const dx = rp2.x - rp1.x;
+            const dy = rp2.y - rp1.y;
+
+            rp2 = {x: rp1.x + 10 * dx, y: rp1.y + 10 * dy};
+        }
+
+        return {rp1: rp1, rp2: rp2};
     }
 
     private getBlockHit(p1: {x: number, y: number}, p2: {x: number, y: number}, lastBlockHit?: {x: number, y: number}): {p: {x: number, y: number}, side: string} {
 
         let cells: {x: number, y: number} [];
+        let direction: string;
 
         if (p2.y > p1.y) {
             if (p2.x > p1.x) {
-                // console.log("NE");
+                direction = "NE";
                 cells = this.lineNE(p1, p2);
             } else {
-                // console.log("NW");
+                direction = "NW";
                 cells = this.lineNW(p1, p2);
             }
         } else {
             if (p2.x > p1.x) {
-                // console.log("SE");
+                direction = "SE";
                 cells = this.lineSE(p1, p2);
             } else {
-                // console.log("SW");
+                direction = "SW";
                 cells = this.lineSW(p1, p2);
             }
         }
 
         if (lastBlockHit) {
-
+            
             let i: number;
 
             for (i = 0; i < cells.length; i ++) {
-                if (cells[i].x === lastBlockHit.x && cells[i].y === lastBlockHit.y) {
-                    break;
+
+                if (direction === "SW") {
+
+                    if (cells[i].x <= lastBlockHit.x && cells[i].y <= lastBlockHit.y) {
+                        break;
+                    }
+
+                } else if (direction === "SE") {
+
+                    if (cells[i].x >= lastBlockHit.x && cells[i].y <= lastBlockHit.y) {
+                        break;
+                    }
+
+                } else if (direction === "NW") {
+
+                    if (cells[i].x <= lastBlockHit.x && cells[i].y >= lastBlockHit.y) {
+                        break;
+                    }
+
+                } else {
+
+                    if (cells[i].x >= lastBlockHit.x && cells[i].y >= lastBlockHit.y) {
+                        break;
+                    }
                 }
             }
 
             cells.splice(0, i + 1);
+        }
 
-            // if (cells.length === 0) {
-            //     console.log("ARRIBA ESPAÑA!", lastBlockHit);
-            // }
-
-             // TODO: CHAPUZA ARREGLAR ESTO
-            if (cells.length < 2) {
-                return null;
-            }
+         // TODO: CHAPUZA ARREGLAR ESTO
+         if (cells.length < 2) {
+            return null;
         }
 
         // ver si alguna de las celdas de la trayectoria corresponde a un bloque
@@ -160,7 +191,7 @@ export class BricksBreakerEngine {
                 }
             }
 
-            if (blockHit) {
+            if (blockHit !== null) {
                 break;
             }
         }
@@ -168,17 +199,21 @@ export class BricksBreakerEngine {
         let side: string;
         let lastCell: {x: number, y: number};
 
-        if (blockHit) {
+        if (i === 0) {
+            console.log("COCOFRUT", blockHit);
+            console.log("ACHIAMASAI", cells);
+        }
+
+        if (blockHit !== null) {
             lastCell = cells[i - 1];
         } else {
-
             lastCell = cells[cells.length - 2];
             blockHit = cells[cells.length - 1];
         }
 
         const dx = blockHit.x - lastCell.x;
         const dy = blockHit.y - lastCell.y;
-
+       
         if (dx === 1) {
             side = BricksBreakerEngine.LEFT;
         } else if (dx === -1) {
@@ -207,7 +242,7 @@ export class BricksBreakerEngine {
 
         let i = 0;
 
-        while (x !== p2.x && y !== p2.y && !borderHit) {
+        while ((x !== p2.x || y !== p2.y) && !borderHit) {
 
             i ++;
 
@@ -244,7 +279,7 @@ export class BricksBreakerEngine {
 
         let borderHit = false;
 
-        while ( x !== p2.x && y !== p2.y && !borderHit) {
+        while ((x !== p2.x || y !== p2.y) && !borderHit) {
             if (e <= 0) {
                 x --;
                 e += dy;
@@ -278,7 +313,7 @@ export class BricksBreakerEngine {
 
         let borderHit = false;
 
-        while (x !== p2.x && y !== p2.y && !borderHit) {
+        while ((x !== p2.x || y !== p2.y) && !borderHit) {
 
             if (e <= 0) {
                 y --;
@@ -313,7 +348,7 @@ export class BricksBreakerEngine {
 
         let borderHit = false;
 
-        while ( x !== p2.x && y !== p2.y && !borderHit) {
+        while ((x !== p2.x || y !== p2.y) && !borderHit) {
 
             if (e <= 0) {
                 x --;

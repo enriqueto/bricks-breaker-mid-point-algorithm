@@ -39,6 +39,8 @@ export class BoardScene extends Phaser.Scene {
 
         this.gui = new GUI(this);
         this.add.existing(this.gui);
+
+        // this.boardContainer.drawRay({x: 1600, y: -1120});
     }
 
     public update(): void {
