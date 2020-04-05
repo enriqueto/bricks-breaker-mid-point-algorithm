@@ -62,23 +62,17 @@ export class BoardContainer extends Phaser.GameObjects.Container {
         let dx = p.x - p0.x;
         let dy = p.y - p0.y;
 
-        let slope = dy / dx;
+        const angle = Math.atan2(dy, dx);
 
-        // se trata de buscar un punto lejano que este en el centro de una celda
-        let sign = dx > 0 ? 1 : -1;
+        let x = 1000 * BoardContainer.CELL_SIZE * Math.cos(angle);
+        let y = 1000 * BoardContainer.CELL_SIZE * Math.sin(angle);
 
-        p.x = p0.x + sign * BoardContainer.CELL_SIZE * 10000;
-        p.y = p0.y + sign * slope * BoardContainer.CELL_SIZE * 10000;
+        x = Math.round(x / BoardContainer.CELL_SIZE);
+        y = Math.round(y / BoardContainer.CELL_SIZE);
 
-        p.y = Math.round(p.y / BoardContainer.CELL_SIZE) * BoardContainer.CELL_SIZE;
-
-        // pasar a coordenadas de celda
         const start = {x: 4, y: 10};
-        
-        dx = (p.x - p0.x) / BoardContainer.CELL_SIZE;
-        dy = (p.y - p0.y) / BoardContainer.CELL_SIZE;
 
-        return {x: start.x + dx, y: start.y + dy};
+        return {x: start.x + x, y: start.y + y};
     }
 
     private drawLineSegments(vertices: {x: number, y: number}[]): void {
