@@ -28,18 +28,31 @@ export class BricksBreakerEngine {
         hitBlockData.push(h);
 
         let reflectedSegment = this.getReflectedRay(p1, p2, h);
+        let i = 0;
 
-        while (h && h.p.y !== 11) {
+        while (h && h.p.y !== 11 && i < 1e3) {
+
+            const prevH = h;
 
             h = this.getBlockHit(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
-            
-            // TODO: ARREGLAR ESTO
+
+            let j = 1;
+
+            while (h === null && j < 1e3) {
+                h = this.getBlockHit({x: reflectedSegment.rp1.x - j, y: reflectedSegment.rp1.y - j}, {x: reflectedSegment.rp2.x + j, y: reflectedSegment.rp2.y + j}, prevH.p);
+                j ++;
+            }
+
+            if (j !== 1) {
+                console.log(j);
+            }
+
             if (h) {
-
                 hitBlockData.push(h);
-
                 reflectedSegment = this.getReflectedRay(reflectedSegment.rp1, reflectedSegment.rp2, h);
             }
+        
+            i ++;
         }
 
         return hitBlockData;
@@ -98,7 +111,7 @@ export class BricksBreakerEngine {
                 break;
         }
 
-        // EL PROBLEMA ES QUE LOS PUNTOS REFLEJADOS NO SIEMPRE FUERA DEL TABLERO
+        // EL PROBLEMA ES QUE LOS PUNTOS REFLEJADOS NO SIEMPRE ESTAN FUERA DEL TABLERO
         let rp1 = {x: rp1x, y: rp1y};
         let rp2 = {x: rp2x, y: rp2y};
 
@@ -136,34 +149,27 @@ export class BricksBreakerEngine {
             }
         }
 
+        let i: number;
+
         if (lastBlockHit) {
             
-            let i: number;
-
             for (i = 0; i < cells.length; i ++) {
+                if (cells[i].x === lastBlockHit.x && cells[i].y === lastBlockHit.y) {
+                    break;
+                } 
+            }
 
-                if (direction === "SW") {
+            if (i === cells.length) {
 
-                    if (cells[i].x <= lastBlockHit.x && cells[i].y <= lastBlockHit.y) {
-                        break;
-                    }
-
-                } else if (direction === "SE") {
-
-                    if (cells[i].x >= lastBlockHit.x && cells[i].y <= lastBlockHit.y) {
-                        break;
-                    }
-
-                } else if (direction === "NW") {
-
-                    if (cells[i].x <= lastBlockHit.x && cells[i].y >= lastBlockHit.y) {
-                        break;
-                    }
-
-                } else {
-
-                    if (cells[i].x >= lastBlockHit.x && cells[i].y >= lastBlockHit.y) {
-                        break;
+                for (i = 0; i < cells.length - 1; i ++) {
+                    if (direction === "SW" || direction === "NW") {
+                        if (cells[i].x <= lastBlockHit.x && cells[i + 1].x < lastBlockHit.x) {
+                            break;
+                        }
+                    } else {
+                        if (cells[i].x >= lastBlockHit.x && cells[i + 1].x > lastBlockHit.x) {
+                            break;
+                        }
                     }
                 }
             }
@@ -171,14 +177,12 @@ export class BricksBreakerEngine {
             cells.splice(0, i + 1);
         }
 
-         // TODO: CHAPUZA ARREGLAR ESTO
-         if (cells.length < 2) {
+        if (cells.length < 2) {
+            console.log("no hay suficientes celdas");
             return null;
         }
 
         // ver si alguna de las celdas de la trayectoria corresponde a un bloque
-        let i: number;
-
         let blockHit: {x: number, y: number, hits?: number} = null;
 
         for (i = 0; i < cells.length; i++) {
@@ -195,17 +199,20 @@ export class BricksBreakerEngine {
                 break;
             }
         }
-
+    
         let side: string;
         let lastCell: {x: number, y: number};
 
-        if (i === 0) {
-            console.log("COCOFRUT", blockHit);
-            console.log("ACHIAMASAI", cells);
-        }
-
         if (blockHit !== null) {
-            lastCell = cells[i - 1];
+
+            if (i === 0) {
+                console.log("direct hit on a corner");
+                return null;
+
+            } else {
+                lastCell = cells[i - 1];
+            }
+
         } else {
             lastCell = cells[cells.length - 2];
             blockHit = cells[cells.length - 1];

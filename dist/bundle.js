@@ -183,10 +183,15 @@ var GameManager = /** @class */ (function () {
     }
     GameManager.init = function () {
         GameVars_1.GameVars.blocks = [
-            { x: 7, y: 3, hits: 10 },
-            { x: 1, y: 7, hits: 20 },
-            { x: 3, y: 2, hits: 15 },
-            { x: 8, y: 1, hits: 30 }
+            { x: 1, y: 1, hits: 10 },
+            { x: 2, y: 1, hits: 10 },
+            { x: 6, y: 2, hits: 20 },
+            { x: 5, y: 3, hits: 10 },
+            { x: 6, y: 7, hits: 20 },
+            { x: 2, y: 5, hits: 15 },
+            { x: 4, y: 1, hits: 30 },
+            { x: 6, y: 3, hits: 15 },
+            { x: 4, y: 6, hits: 30 }
         ];
         // GameVars.blocks = [];
         if (GameVars_1.GameVars.currentScene.sys.game.device.os.desktop) {
@@ -384,13 +389,23 @@ var BricksBreakerEngine = /** @class */ (function () {
         var h = this.getBlockHit(p1, p2);
         hitBlockData.push(h);
         var reflectedSegment = this.getReflectedRay(p1, p2, h);
-        while (h && h.p.y !== 11) {
+        var i = 0;
+        while (h && h.p.y !== 11 && i < 1e2) {
+            var prevH = h;
             h = this.getBlockHit(reflectedSegment.rp1, reflectedSegment.rp2, h.p);
-            // TODO: ARREGLAR ESTO
+            var j = 1;
+            while (h === null && j < 1e2) {
+                h = this.getBlockHit({ x: reflectedSegment.rp1.x - j, y: reflectedSegment.rp1.y - j }, { x: reflectedSegment.rp2.x + j, y: reflectedSegment.rp2.y + j }, prevH.p);
+                j++;
+            }
+            if (j !== 1) {
+                console.log(j);
+            }
             if (h) {
                 hitBlockData.push(h);
                 reflectedSegment = this.getReflectedRay(reflectedSegment.rp1, reflectedSegment.rp2, h);
             }
+            i++;
         }
         return hitBlockData;
     };
@@ -427,7 +442,7 @@ var BricksBreakerEngine = /** @class */ (function () {
             default:
                 break;
         }
-        // EL PROBLEMA ES QUE LOS PUNTOS REFLEJADOS NO SIEMPRE FUERA DEL TABLERO
+        // EL PROBLEMA ES QUE LOS PUNTOS REFLEJADOS NO SIEMPRE ESTAN FUERA DEL TABLERO
         var rp1 = { x: rp1x, y: rp1y };
         var rp2 = { x: rp2x, y: rp2y };
         if (rp2.x >= 0 && rp2.x < this.width && rp2.y >= 0 && rp2.y < this.height) {
@@ -442,65 +457,52 @@ var BricksBreakerEngine = /** @class */ (function () {
         var direction;
         if (p2.y > p1.y) {
             if (p2.x > p1.x) {
-                // console.log("NE");
                 direction = "NE";
                 cells = this.lineNE(p1, p2);
             }
             else {
-                // console.log("NW");
                 direction = "NW";
                 cells = this.lineNW(p1, p2);
             }
         }
         else {
             if (p2.x > p1.x) {
-                // console.log("SE");
                 direction = "SE";
                 cells = this.lineSE(p1, p2);
             }
             else {
-                // console.log("SW");
                 direction = "SW";
                 cells = this.lineSW(p1, p2);
             }
         }
-        // console.log(direction, JSON.stringify(lastBlockHit), "cells:" + JSON.stringify(cells));
+        var i;
         if (lastBlockHit) {
-            // console.log(direction);
-            var i_1;
-            for (i_1 = 0; i_1 < cells.length; i_1++) {
-                if (direction === "SW") {
-                    if (cells[i_1].x <= lastBlockHit.x && cells[i_1].y <= lastBlockHit.y) {
-                        break;
-                    }
+            for (i = 0; i < cells.length; i++) {
+                if (cells[i].x === lastBlockHit.x && cells[i].y === lastBlockHit.y) {
+                    break;
                 }
-                else if (direction === "SE") {
-                    if (cells[i_1].x >= lastBlockHit.x && cells[i_1].y <= lastBlockHit.y) {
-                        break;
+            }
+            if (i === cells.length) {
+                for (i = 0; i < cells.length - 1; i++) {
+                    if (direction === "SW" || direction === "NW") {
+                        if (cells[i].x <= lastBlockHit.x && cells[i + 1].x < lastBlockHit.x) {
+                            break;
+                        }
                     }
-                }
-                else if (direction === "NW") {
-                    if (cells[i_1].x <= lastBlockHit.x && cells[i_1].y >= lastBlockHit.y) {
-                        break;
-                    }
-                }
-                else {
-                    if (cells[i_1].x >= lastBlockHit.x && cells[i_1].y >= lastBlockHit.y) {
-                        // console.log("ARRIBA ESPAÑA", i);
-                        break;
+                    else {
+                        if (cells[i].x >= lastBlockHit.x && cells[i + 1].x > lastBlockHit.x) {
+                            break;
+                        }
                     }
                 }
             }
-            // cells.splice(0, i + 1);
-            cells.splice(0, i_1 + 1);
-            // TODO: CHAPUZA ARREGLAR ESTO
-            if (cells.length < 2) {
-                // console.log("VIVA FRANCO!", lastBlockHit, i);
-                return null;
-            }
+            cells.splice(0, i + 1);
+        }
+        // TODO: CHAPUZA ARREGLAR ESTO
+        if (cells.length < 2) {
+            return null;
         }
         // ver si alguna de las celdas de la trayectoria corresponde a un bloque
-        var i;
         var blockHit = null;
         for (i = 0; i < cells.length; i++) {
             var cell = cells[i];
@@ -517,7 +519,13 @@ var BricksBreakerEngine = /** @class */ (function () {
         var side;
         var lastCell;
         if (blockHit !== null) {
-            lastCell = cells[i - 1];
+            if (i === 0) {
+                console.log("direct hit on a corner");
+                return null;
+            }
+            else {
+                lastCell = cells[i - 1];
+            }
         }
         else {
             lastCell = cells[cells.length - 2];
@@ -979,27 +987,13 @@ var BoardContainer = /** @class */ (function (_super) {
         var p0 = { x: 0, y: 5 * BoardContainer.CELL_SIZE };
         var dx = p.x - p0.x;
         var dy = p.y - p0.y;
-        var slope = dy / dx;
-        // se trata de buscar un punto lejano que este en el centro de una celda
-        var sign = dx > 0 ? 1 : -1;
-        p.x = p0.x + sign * BoardContainer.CELL_SIZE * 20;
-        p.y = p0.y + sign * slope * BoardContainer.CELL_SIZE * 20;
-        p.y = Math.round(p.y / BoardContainer.CELL_SIZE) * BoardContainer.CELL_SIZE;
-        // pasar a coordenadas de celda
+        var angle = Math.atan2(dy, dx);
+        var x = 25 * BoardContainer.CELL_SIZE * Math.cos(angle);
+        var y = 25 * BoardContainer.CELL_SIZE * Math.sin(angle);
+        x = Math.round(x / BoardContainer.CELL_SIZE);
+        y = Math.round(y / BoardContainer.CELL_SIZE);
         var start = { x: 4, y: 10 };
-        dx = (p.x - p0.x) / BoardContainer.CELL_SIZE;
-        dy = (p.y - p0.y) / BoardContainer.CELL_SIZE;
-        return { x: start.x + dx, y: start.y + dy };
-        // let p0 = {x: 0, y: 5 * BoardContainer.CELL_SIZE};
-        // let dx = p.x - p0.x;
-        // let dy = p.y - p0.y;
-        // const angle = Math.atan2(dy, dx);
-        // let x = 2000 * BoardContainer.CELL_SIZE * Math.cos(angle);
-        // let y = 2000 * BoardContainer.CELL_SIZE * Math.sin(angle);
-        // x = Math.round(x / BoardContainer.CELL_SIZE);
-        // y = Math.round(y / BoardContainer.CELL_SIZE);
-        // const start = {x: 4, y: 10};
-        // return {x: start.x + x, y: start.y + y};
+        return { x: start.x + x, y: start.y + y };
     };
     BoardContainer.prototype.drawLineSegments = function (vertices) {
         if (vertices === null || vertices.length < 2) {
@@ -1152,14 +1146,13 @@ var BoardScene = /** @class */ (function (_super) {
         this.add.existing(this.hud);
         this.gui = new GUI_1.GUI(this);
         this.add.existing(this.gui);
-        // this.boardContainer.drawRay({x: 1600, y: -1120});
     };
     BoardScene.prototype.update = function () {
         var pointer = this.input.activePointer;
         if (pointer.isDown) {
             // pasamos a las coordenadas del tablero
             var p = { x: Math.round((pointer.x - this.boardContainer.x) * 100) / 100, y: Math.round((pointer.y - this.boardContainer.y) * 100) / 100 };
-            if (p.y < BoardContainer_1.BoardContainer.CELL_SIZE * 5 * .985) {
+            if (p.y < BoardContainer_1.BoardContainer.CELL_SIZE * 5 * .95) {
                 this.boardContainer.drawRay(p);
             }
         }

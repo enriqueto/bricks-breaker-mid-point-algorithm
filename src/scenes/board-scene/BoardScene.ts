@@ -39,8 +39,6 @@ export class BoardScene extends Phaser.Scene {
 
         this.gui = new GUI(this);
         this.add.existing(this.gui);
-
-        // this.boardContainer.drawRay({x: 1600, y: -1120});
     }
 
     public update(): void {
@@ -52,7 +50,7 @@ export class BoardScene extends Phaser.Scene {
             // pasamos a las coordenadas del tablero
             const p = {x: Math.round((pointer.x - this.boardContainer.x) * 100) / 100, y:  Math.round((pointer.y - this.boardContainer.y) * 100) / 100};
  
-            if (p.y < BoardContainer.CELL_SIZE * 5 * .985) {
+            if (p.y < BoardContainer.CELL_SIZE * 5 * .95) {
                 this.boardContainer.drawRay(p);
             }           
         }
